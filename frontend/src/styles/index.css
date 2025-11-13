@@ -121,11 +121,24 @@ body::after {
   box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.2);
 }
 
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
 .chart-title {
   font-size: 12px;
-  margin-bottom: 15px;
   color: #00ffff;
   text-shadow: 0 0 5px #00ffff;
+}
+
+.chart-game-name {
+  font-size: 9px;
+  color: #ff00ff;
+  text-shadow: 0 0 5px #ff00ff;
+  text-align: right;
 }
 
 /* Info panel */
@@ -463,6 +476,43 @@ body::after {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-10px); }
   75% { transform: translateX(10px); }
+}
+
+/* LinkedIn button */
+.linkedin-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #0077b5, #00a0dc);
+  border: 4px solid #00ffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  z-index: 1000;
+  text-decoration: none;
+}
+
+.linkedin-button:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+  border-color: #ff00ff;
+}
+
+.linkedin-button svg {
+  width: 35px;
+  height: 35px;
+  fill: #fff;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+
+.linkedin-button:active {
+  transform: scale(0.95);
 }
 
 /* Responsive */

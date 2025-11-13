@@ -31,7 +31,7 @@ const InfoPanel = ({
     } else if (name.includes('Lookback')) {
       return (
         <span>
-          Payoff: max<sub>τ</sub> S(τ) - S(T)
+          Payoff: max<sub>τ≤t,i</sub> S<sub>i</sub>(τ) - min<sub>i</sub> S<sub>i</sub>(t)
           <br />
           <span style={{ fontSize: '7px' }}>If {gameInfo.barrier_down} {'<'} S(t) {'<'} {gameInfo.barrier_up}</span>
         </span>
@@ -99,7 +99,7 @@ const InfoPanel = ({
       )}
 
       <div className={`machine-indicator ${machineDecisionFlash ? 'flash' : ''}`}>
-        <div className="machine-label">MACHINE</div>
+        <div className="machine-label">MACHINE DECISION</div>
         <div className={`machine-decision ${machineDecision.toLowerCase()}`}>
           {machineDecision}
         </div>

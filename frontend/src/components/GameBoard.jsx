@@ -44,7 +44,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
       // Start animation to first step
       setTimeout(() => {
         setCurrentStep(1)
-        setShowMachineDecision(true) // Show machine decision for step 1
+        // Don't show machine decision initially - wait for first user decision
       }, 1000)
     }
   }, [gameState])

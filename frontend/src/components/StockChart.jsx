@@ -33,7 +33,10 @@ const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineEx
 
   return (
     <div className="chart-container">
-      <div className="chart-title">STOCK PRICE PATHS</div>
+      <div className="chart-header">
+        <div className="chart-title">STOCK PRICE PATHS</div>
+        <div className="chart-game-name">{gameInfo.name}</div>
+      </div>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#333" />
