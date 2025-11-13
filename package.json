@@ -1,0 +1,27 @@
+{
+  "name": "thesis-game",
+  "version": "1.0.0",
+  "description": "Optimal Stopping Game - Challenge the Algorithm",
+  "scripts": {
+    "install-backend": "cd backend && pip install -r requirements.txt",
+    "install-frontend": "cd frontend && npm install",
+    "train": "python backend/train_models.py",
+    "start-backend": "python backend/api.py",
+    "start-frontend": "cd frontend && npm run dev",
+    "build-frontend": "cd frontend && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/thesis-game"
+  },
+  "keywords": [
+    "optimal-stopping",
+    "reinforcement-learning",
+    "finance",
+    "monte-carlo",
+    "barrier-options",
+    "game"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
