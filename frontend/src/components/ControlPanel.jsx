@@ -5,32 +5,29 @@ const ControlPanel = ({
   onExercise,
   onSwitchProduct,
   isPlayerTurn,
-  gameEnded,
   isAnimating,
   currentProduct
 }) => {
-  const canAct = isPlayerTurn && !gameEnded && !isAnimating
-
   return (
     <div className="control-panel">
       <div className="button-group">
         <button
           className="arcade-button hold"
           onClick={onHold}
-          disabled={!canAct}
+          disabled={!isPlayerTurn}
         >
           HOLD
         </button>
         <button
           className="arcade-button exercise"
           onClick={onExercise}
-          disabled={!canAct}
+          disabled={!isPlayerTurn}
         >
           EXERCISE
         </button>
       </div>
 
-      {!isPlayerTurn && !gameEnded && (
+      {!isPlayerTurn && (
         <div style={{ color: '#ffff00', fontSize: '12px', marginTop: '10px' }}>
           {isAnimating ? 'FAST FORWARD...' : 'WATCH THE PATH...'}
         </div>

@@ -12,7 +12,8 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   const [machineExerciseDate, setMachineExerciseDate] = useState(gameData.machine_exercise_date)
   const [machinePayoff, setMachinePayoff] = useState(null)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [gameEnded, setGameEnded] = useState(false)
+  const [showMachineDecision, setShowMachineDecision] = useState(false) // NEW: control when to show machine decision
+  const [machineDecisionFlash, setMachineDecisionFlash] = useState(false) // NEW: flash effect
 
   const animationRef = useRef(null)
 
@@ -43,18 +44,20 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
       // Start animation to first step
       setTimeout(() => {
         setCurrentStep(1)
+        setShowMachineDecision(true) // Show machine decision for step 1
       }, 1000)
     }
   }, [gameState])
 
-  // Auto-advance animation
+  // Auto-advance animation (FIXED: removed !gameEnded check)
   useEffect(() => {
-    if (gameState === 'playing' && !gameEnded && !playerDecision && currentStep > 0 && currentStep < nb_dates) {
+    if (gameState === 'playing' && !playerDecision && currentStep > 0 && currentStep < nb_dates) {
       // Wait for user decision - don't auto-advance
       return
     }
 
-    if (isAnimating && currentStep < nb_dates && !gameEnded) {
+    // FIXED: Allow animation even when game ended (for fast-forward)
+    if (isAnimating && currentStep < nb_dates) {
       animationRef.current = setTimeout(() => {
         setCurrentStep(prev => prev + 1)
       }, 500) // Fast animation
@@ -65,29 +68,29 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
         clearTimeout(animationRef.current)
       }
     }
-  }, [currentStep, isAnimating, gameEnded, playerDecision, gameState])
+  }, [currentStep, isAnimating, playerDecision, gameState])
 
   // Check for automatic termination (barrier hit or maturity)
   useEffect(() => {
-    if (gameState !== 'playing' || gameEnded) return
+    if (gameState !== 'playing') return
+    if (playerDecision) return // Already decided
 
     // Check if barrier hit
-    if (isBarrierHit() && !playerDecision && !gameEnded) {
+    if (isBarrierHit() && !playerDecision) {
       handleBarrierHit()
     }
 
     // Check if reached maturity
-    if (currentStep === nb_dates && !gameEnded) {
+    if (currentStep === nb_dates && !playerDecision) {
       handleMaturity()
     }
-  }, [currentStep, gameState])
+  }, [currentStep, gameState, playerDecision])
 
   const handleBarrierHit = () => {
     // Player's payoff is 0 (barrier hit)
     setPlayerExerciseDate(currentStep)
     setPlayerPayoff(0)
     setPlayerDecision('barrier_hit')
-    setGameEnded(true)
 
     // Show fast animation for machine if it hasn't exercised yet
     if (currentStep < machineExerciseDate) {
@@ -100,21 +103,18 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   }
 
   const handleMaturity = () => {
-    if (!gameEnded) {
-      // Reached maturity without exercising
-      setPlayerExerciseDate(nb_dates)
-      setPlayerPayoff(payoffs_timeline[nb_dates])
-      setPlayerDecision('maturity')
-      setGameEnded(true)
+    // Reached maturity without exercising
+    setPlayerExerciseDate(nb_dates)
+    setPlayerPayoff(payoffs_timeline[nb_dates])
+    setPlayerDecision('maturity')
 
-      // Set machine payoff
-      setMachinePayoff(payoffs_timeline[machineExerciseDate])
-      finishGame()
-    }
+    // Set machine payoff
+    setMachinePayoff(payoffs_timeline[machineExerciseDate])
+    finishGame()
   }
 
   const handleHold = () => {
-    if (gameEnded || playerDecision) return
+    if (playerDecision) return
 
     // Check if at maturity
     if (currentStep === nb_dates) {
@@ -122,18 +122,25 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
       return
     }
 
-    // Advance to next step
-    setCurrentStep(prev => prev + 1)
+    // NEW: Hide machine decision, then show after delay
+    setShowMachineDecision(false)
+    setMachineDecisionFlash(true)
+
+    // Delay before advancing to next step
+    setTimeout(() => {
+      setShowMachineDecision(true)
+      setMachineDecisionFlash(false)
+      setCurrentStep(prev => prev + 1)
+    }, 300) // 0.3s delay
   }
 
   const handleExercise = () => {
-    if (gameEnded || playerDecision) return
+    if (playerDecision) return
 
     // Player exercises
     setPlayerExerciseDate(currentStep)
     setPlayerPayoff(payoffs_timeline[currentStep])
     setPlayerDecision('exercise')
-    setGameEnded(true)
 
     // Check if machine already exercised
     if (currentStep >= machineExerciseDate) {
@@ -167,6 +174,8 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   }
 
   const getMachineDecisionText = () => {
+    if (!showMachineDecision) return '...'
+
     if (currentStep < machineExerciseDate) {
       return 'HOLD'
     } else if (currentStep === machineExerciseDate) {
@@ -176,7 +185,16 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
     }
   }
 
-  const isPlayerTurn = gameState === 'playing' && !gameEnded && !playerDecision && !isAnimating && currentStep > 0
+  const getMachineCurrentPayoff = () => {
+    // If machine hasn't exercised yet, show current payoff
+    // If machine has exercised, show locked payoff
+    if (machinePayoff !== null) {
+      return machinePayoff
+    }
+    return payoffs_timeline[currentStep]
+  }
+
+  const isPlayerTurn = gameState === 'playing' && !playerDecision && !isAnimating && currentStep > 0 && currentStep <= nb_dates
 
   return (
     <div>
@@ -209,6 +227,8 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
               path={path}
               isBarrierHit={isBarrierHit()}
               machineDecision={getMachineDecisionText()}
+              machineCurrentPayoff={getMachineCurrentPayoff()}
+              machineDecisionFlash={machineDecisionFlash}
             />
           </div>
 
@@ -217,7 +237,6 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
             onExercise={handleExercise}
             onSwitchProduct={onSwitchProduct}
             isPlayerTurn={isPlayerTurn}
-            gameEnded={gameEnded}
             isAnimating={isAnimating}
             currentProduct={game_info.name}
           />

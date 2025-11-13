@@ -302,6 +302,52 @@ body::after {
   100% { transform: scale(1); }
 }
 
+.machine-payoff {
+  font-size: 16px;
+  color: #ff00ff;
+  margin-top: 8px;
+  text-shadow: 0 0 10px #ff00ff;
+  font-weight: bold;
+}
+
+.machine-indicator.flash {
+  animation: flashBorder 0.3s ease-in-out;
+}
+
+@keyframes flashBorder {
+  0%, 100% { border-color: #ffff00; }
+  50% { border-color: #00ffff; box-shadow: 0 0 20px #00ffff; }
+}
+
+/* Payoff formula display */
+.payoff-formula {
+  background: #1a1a2e;
+  border: 3px solid #00ffff;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.formula-label {
+  font-size: 8px;
+  color: #00ffff;
+  margin-bottom: 8px;
+  text-shadow: 0 0 5px #00ffff;
+  letter-spacing: 1px;
+}
+
+.formula-text {
+  font-size: 10px;
+  color: #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+  line-height: 1.6;
+}
+
+.formula-text sub {
+  font-size: 7px;
+}
+
 /* Results screen */
 .results-screen {
   background: #0a0a0a;

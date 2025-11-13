@@ -1,10 +1,55 @@
 import React from 'react'
 
-const InfoPanel = ({ currentStep, nbDates, currentPayoff, gameInfo, path, isBarrierHit, machineDecision }) => {
+const InfoPanel = ({
+  currentStep,
+  nbDates,
+  currentPayoff,
+  gameInfo,
+  path,
+  isBarrierHit,
+  machineDecision,
+  machineCurrentPayoff,
+  machineDecisionFlash
+}) => {
   // Calculate current prices
   const currentPrices = path.map(stock => stock[currentStep])
   const minPrice = Math.min(...currentPrices)
   const maxPrice = Math.max(...currentPrices)
+
+  // Get payoff formula based on game type
+  const getPayoffFormula = () => {
+    const name = gameInfo.name
+
+    if (name.includes('Up-and-Out Min Put')) {
+      return (
+        <span>
+          Payoff: K - min<sub>i</sub> S<sub>i</sub>(t)
+          <br />
+          <span style={{ fontSize: '7px' }}>If max<sub>i</sub> S<sub>i</sub>(t) {'<'} {gameInfo.barrier}</span>
+        </span>
+      )
+    } else if (name.includes('Lookback')) {
+      return (
+        <span>
+          Payoff: max<sub>τ</sub> S(τ) - S(T)
+          <br />
+          <span style={{ fontSize: '7px' }}>If {gameInfo.barrier_down} {'<'} S(t) {'<'} {gameInfo.barrier_up}</span>
+        </span>
+      )
+    }
+
+    return 'Payoff: ...'
+  }
+
+  // Get barrier display text
+  const getBarrierText = () => {
+    if (gameInfo.barrier_type === 'up') {
+      return `Upper Barrier: ${gameInfo.barrier}`
+    } else if (gameInfo.barrier_type === 'double') {
+      return `Barriers: ${gameInfo.barrier_down} / ${gameInfo.barrier_up}`
+    }
+    return ''
+  }
 
   return (
     <div className="info-panel">
@@ -14,7 +59,7 @@ const InfoPanel = ({ currentStep, nbDates, currentPayoff, gameInfo, path, isBarr
       </div>
 
       <div className="info-item">
-        <span className="info-label">CURRENT PAYOFF</span>
+        <span className="info-label">YOUR PAYOFF</span>
         <div className={`info-value large ${isBarrierHit ? 'barrier-warning' : ''}`}>
           ${currentPayoff?.toFixed(2) || '0.00'}
         </div>
@@ -26,12 +71,14 @@ const InfoPanel = ({ currentStep, nbDates, currentPayoff, gameInfo, path, isBarr
         </div>
       )}
 
-      <div className="info-item">
-        <span className="info-label">GAME TYPE</span>
-        <div className="info-value" style={{ fontSize: '10px' }}>
-          {gameInfo.name}
+      {getBarrierText() && (
+        <div className="info-item">
+          <span className="info-label">BARRIERS</span>
+          <div className="info-value" style={{ fontSize: '12px', color: '#ff0000' }}>
+            {getBarrierText()}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="info-item">
         <span className="info-label">CURRENT PRICES</span>
@@ -51,10 +98,20 @@ const InfoPanel = ({ currentStep, nbDates, currentPayoff, gameInfo, path, isBarr
         </div>
       )}
 
-      <div className="machine-indicator">
-        <div className="machine-label">MACHINE DECISION</div>
+      <div className={`machine-indicator ${machineDecisionFlash ? 'flash' : ''}`}>
+        <div className="machine-label">MACHINE</div>
         <div className={`machine-decision ${machineDecision.toLowerCase()}`}>
           {machineDecision}
+        </div>
+        <div className="machine-payoff">
+          ${machineCurrentPayoff?.toFixed(2) || '0.00'}
+        </div>
+      </div>
+
+      <div className="payoff-formula">
+        <div className="formula-label">PAYOFF FORMULA</div>
+        <div className="formula-text">
+          {getPayoffFormula()}
         </div>
       </div>
     </div>

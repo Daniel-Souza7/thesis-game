@@ -61,8 +61,9 @@ const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineEx
             itemStyle={{ color: '#00ff00' }}
           />
           <Legend
-            wrapperStyle={{ fontSize: '10px', fontFamily: 'Press Start 2P' }}
+            wrapperStyle={{ fontSize: '10px', fontFamily: 'Press Start 2P', paddingTop: '20px' }}
             iconType="line"
+            verticalAlign="bottom"
           />
 
           {/* Barrier lines */}
