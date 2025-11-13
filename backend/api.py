@@ -16,8 +16,9 @@ import random
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
-# Paths
-DATA_DIR = 'backend/data'
+# Paths (relative to this script's location)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
 PATHS_DIR = os.path.join(DATA_DIR, 'paths')
 MODELS_DIR = os.path.join(DATA_DIR, 'trained_models')
 
@@ -190,6 +191,22 @@ def start_game():
         'machine_exercise_date': machine_exercise_date,
         'payoffs_timeline': payoffs_timeline,
         'game_info': game_info
+    })
+
+
+@app.route('/', methods=['GET'])
+def index():
+    """Root endpoint - API information."""
+    return jsonify({
+        'message': 'Optimal Stopping Game API',
+        'version': '1.0.0',
+        'endpoints': {
+            'health': '/api/health',
+            'game_info': '/api/game/info',
+            'start_game': '/api/game/start?product={upandout|dko}'
+        },
+        'frontend': 'Please run the frontend application on port 3000',
+        'status': 'running'
     })
 
 

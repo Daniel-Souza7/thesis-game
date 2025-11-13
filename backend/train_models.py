@@ -37,8 +37,9 @@ PARAMS = {
 NB_TRAIN_PATHS = 50000
 NB_TEST_PATHS = 500
 
-# Output directories
-DATA_DIR = 'backend/data'
+# Output directories (relative to this script's location)
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(SCRIPT_DIR, 'data')
 PATHS_DIR = os.path.join(DATA_DIR, 'paths')
 MODELS_DIR = os.path.join(DATA_DIR, 'trained_models')
 
