@@ -623,8 +623,8 @@ body::after {
   border: 6px solid #00ff00;
   border-radius: 15px;
   padding: 30px;
-  max-width: 950px;
-  width: 90%;
+  max-width: 1400px;
+  width: 95%;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: 0 0 40px rgba(0, 255, 0, 0.8);
@@ -714,10 +714,14 @@ body::after {
 }
 
 .game-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 10px;
+}
+
+.game-item-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 10px;
 }
 
 .game-item-title {
