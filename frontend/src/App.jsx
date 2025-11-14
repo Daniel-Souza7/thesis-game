@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import GameBoard from './components/GameBoard'
+import GameSelectionModal from './components/GameSelectionModal'
 
 const API_BASE_URL = import.meta.env.PROD
   ? 'https://your-backend-url.vercel.app/api'  // Update this for production
   : '/api'
 
 function App() {
-  const [gameState, setGameState] = useState('loading') // loading, ready, playing, results
+  const [gameState, setGameState] = useState('select') // select, loading, ready, playing, results
   const [currentProduct, setCurrentProduct] = useState('upandout')
   const [gameData, setGameData] = useState(null)
   const [error, setError] = useState(null)
-
-  // Load initial game on mount
-  useEffect(() => {
-    startNewGame(currentProduct)
-  }, [])
 
   const startNewGame = async (product) => {
     setGameState('loading')
@@ -56,6 +52,12 @@ function App() {
         <h1 className="game-title">OPTIMAL STOPPING GAME</h1>
         <p className="game-subtitle">Challenge the Algorithm - Can You Beat the Machine?</p>
 
+        {gameState === 'select' && (
+          <div className="loading-screen">
+            <div className="loading-text">SELECT YOUR GAME</div>
+          </div>
+        )}
+
         {gameState === 'loading' && (
           <div className="loading-screen">
             <div className="loading-text">LOADING GAME...</div>
@@ -85,6 +87,15 @@ function App() {
           </>
         )}
       </div>
+
+      {/* Initial Game Selection Modal */}
+      {gameState === 'select' && (
+        <GameSelectionModal
+          onClose={() => {}} // No close button on initial load
+          onSelectGame={(gameId) => startNewGame(gameId)}
+          currentGame={currentProduct}
+        />
+      )}
 
       {/* Social/Info Buttons */}
       <div className="floating-buttons">

@@ -16,6 +16,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   const [showMachineDecision, setShowMachineDecision] = useState(false) // NEW: control when to show machine decision
   const [machineDecisionFlash, setMachineDecisionFlash] = useState(false) // NEW: flash effect
   const [showGameSelection, setShowGameSelection] = useState(false) // NEW: game selection modal
+  const [revealedUpToStep, setRevealedUpToStep] = useState(0) // NEW: track which step machine marker can show
 
   const animationRef = useRef(null)
 
@@ -62,6 +63,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
     if (isAnimating && currentStep < nb_dates) {
       animationRef.current = setTimeout(() => {
         setCurrentStep(prev => prev + 1)
+        setRevealedUpToStep(prev => prev + 1) // Reveal during fast-forward animation
       }, 500) // Fast animation
     }
 
@@ -93,6 +95,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
     setPlayerExerciseDate(currentStep)
     setPlayerPayoff(0)
     setPlayerDecision('barrier_hit')
+    setRevealedUpToStep(currentStep) // Reveal machine line for this step
 
     // Show fast animation for machine if it hasn't exercised yet
     if (currentStep < machineExerciseDate) {
@@ -132,6 +135,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
     setTimeout(() => {
       setShowMachineDecision(true)
       setMachineDecisionFlash(false)
+      setRevealedUpToStep(currentStep) // Reveal machine line for this step
       setCurrentStep(prev => prev + 1)
     }, 300) // 0.3s delay
   }
@@ -143,6 +147,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
     setPlayerExerciseDate(currentStep)
     setPlayerPayoff(payoffs_timeline[currentStep])
     setPlayerDecision('exercise')
+    setRevealedUpToStep(currentStep) // Reveal machine line for this step
 
     // Check if machine already exercised
     if (currentStep >= machineExerciseDate) {
@@ -197,11 +202,8 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
       return machinePayoff
     }
 
-    // Show payoff for PREVIOUS step to avoid spoiling
-    const displayStep = currentStep - 1
-    if (displayStep < 1) return 0
-
-    return payoffs_timeline[displayStep]
+    // Always show $0.00 until machine exercises
+    return 0
   }
 
   const isPlayerTurn = gameState === 'playing' && !playerDecision && !isAnimating && currentStep > 0 && currentStep <= nb_dates
@@ -242,6 +244,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
               gameInfo={game_info}
               playerExerciseDate={playerExerciseDate}
               machineExerciseDate={machineExerciseDate}
+              revealedUpToStep={revealedUpToStep}
             />
 
             <InfoPanel

@@ -1,7 +1,7 @@
 import React from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
-const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineExerciseDate }) => {
+const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineExerciseDate, revealedUpToStep }) => {
   // Prepare data for chart (only show up to current step)
   const chartData = []
   for (let i = 0; i <= currentStep; i++) {
@@ -116,7 +116,7 @@ const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineEx
               label={{ value: 'YOU', fill: '#00ff00', fontSize: 10, position: 'top' }}
             />
           )}
-          {machineExerciseDate !== null && currentStep >= machineExerciseDate && (
+          {machineExerciseDate !== null && currentStep >= machineExerciseDate && revealedUpToStep >= machineExerciseDate && (
             <ReferenceLine
               x={machineExerciseDate}
               stroke="#ff00ff"
