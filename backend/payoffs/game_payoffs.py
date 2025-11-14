@@ -5,7 +5,7 @@ Difficulty levels: MEDIUM, HARD, IMPOSSIBLE
 """
 
 import numpy as np
-from optimal_stopping.payoffs.payoff import Payoff
+from backend.payoffs.barrier_options import Payoff
 
 
 # ============================================================================
