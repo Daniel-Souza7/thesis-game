@@ -2,7 +2,7 @@
 Flask API server for the thesis game.
 
 Endpoints:
-- GET /api/game/start?product={upandout|dko} - Start a new game
+- GET /api/game/start?product={game_id} - Start a new game
 - GET /api/game/info - Get game parameters
 """
 
@@ -25,61 +25,156 @@ MODELS_DIR = os.path.join(DATA_DIR, 'trained_models')
 # Global storage for loaded data
 GAME_DATA = {}
 
+# Game configurations matching train_models.py
+GAME_CONFIGS = [
+    # MEDIUM
+    {
+        'id': 'upandoutcall',
+        'name': 'UpAndOutCall',
+        'description': '1 stock, upper barrier at 130',
+        'nb_stocks': 1,
+        'difficulty': 'Medium',
+        'barrier': 130,
+        'barrier_type': 'up'
+    },
+    {
+        'id': 'downandoutbskput',
+        'name': 'DownAndOutBskPut',
+        'description': '3 stocks, lower barrier at 70',
+        'nb_stocks': 3,
+        'difficulty': 'Medium',
+        'barrier': 70,
+        'barrier_type': 'down'
+    },
+    {
+        'id': 'doublebarriermaxcall',
+        'name': 'DoubleBarrierMaxCall',
+        'description': '7 stocks, barriers at 85 and 130',
+        'nb_stocks': 7,
+        'difficulty': 'Medium',
+        'barrier_up': 130,
+        'barrier_down': 85,
+        'barrier_type': 'double'
+    },
+    # HARD
+    {
+        'id': 'randomlymovingbarriercall',
+        'name': 'RandomlyMovingBarrierCall',
+        'description': '1 stock, moving barrier starting at 125',
+        'nb_stocks': 1,
+        'difficulty': 'Hard',
+        'barrier': 125,
+        'barrier_type': 'up'
+    },
+    {
+        'id': 'upandoutminput',
+        'name': 'UpAndOutMinPut',
+        'description': '3 stocks, upper barrier at 120',
+        'nb_stocks': 3,
+        'difficulty': 'Hard',
+        'barrier': 120,
+        'barrier_type': 'up'
+    },
+    {
+        'id': 'downandoutbest2call',
+        'name': 'DownAndOutBest2Call',
+        'description': '7 stocks, lower barrier at 85',
+        'nb_stocks': 7,
+        'difficulty': 'Hard',
+        'barrier': 85,
+        'barrier_type': 'down'
+    },
+    # IMPOSSIBLE
+    {
+        'id': 'doublebarrierlookbackfloatingput',
+        'name': 'DoubleBarrierLookbackFloatingPut',
+        'description': '1 stock, barriers at 85 and 115',
+        'nb_stocks': 1,
+        'difficulty': 'Impossible',
+        'barrier_up': 115,
+        'barrier_down': 85,
+        'barrier_type': 'double'
+    },
+    {
+        'id': 'doublebarrierrankweightedbskcall',
+        'name': 'DoubleBarrierRankWeightedBskCall',
+        'description': '3 stocks, barriers at 80 and 125',
+        'nb_stocks': 3,
+        'difficulty': 'Impossible',
+        'barrier_up': 125,
+        'barrier_down': 80,
+        'barrier_type': 'double'
+    },
+    {
+        'id': 'doublemovingbarrierdispersioncall',
+        'name': 'DoubleMovingBarrierDispersionCall',
+        'description': '7 stocks, moving barriers at 85 and 115',
+        'nb_stocks': 7,
+        'difficulty': 'Impossible',
+        'barrier_up': 115,
+        'barrier_down': 85,
+        'barrier_type': 'double'
+    }
+]
+
 
 def load_game_data():
     """Load trained models and test paths on server startup."""
     print("Loading trained models and test paths...")
 
-    # Load UpAndOut Min Put
-    try:
-        with open(os.path.join(MODELS_DIR, 'upandout_minput.pkl'), 'rb') as f:
-            upandout_model = pickle.load(f)
+    # Load shared test paths for each stock count
+    test_paths_by_stock = {}
+    for nb_stocks in [1, 3, 7]:
+        try:
+            test_data = np.load(os.path.join(PATHS_DIR, f'test_{nb_stocks}stock.npz'))
+            test_paths_by_stock[nb_stocks] = test_data['paths']
+            print(f"  ✓ Loaded test paths for {nb_stocks} stock(s): {test_data['paths'].shape[0]} paths")
+        except Exception as e:
+            print(f"  ✗ Failed to load test paths for {nb_stocks} stock(s): {e}")
 
-        upandout_test = np.load(os.path.join(PATHS_DIR, 'upandout_test.npz'))
-        upandout_paths = upandout_test['paths']
+    # Load each game's trained model
+    for config in GAME_CONFIGS:
+        game_id = config['id']
+        try:
+            # Load trained model
+            model_file = os.path.join(MODELS_DIR, f"{game_id}.pkl")
+            with open(model_file, 'rb') as f:
+                model_data = pickle.load(f)
 
-        GAME_DATA['upandout'] = {
-            'srlsm': upandout_model['srlsm'],
-            'model': upandout_model['model'],
-            'payoff': upandout_model['payoff'],
-            'test_paths': upandout_paths,
-            'price': upandout_model['price'],
-            'avg_exercise_time': upandout_model['avg_exercise_time'],
-            'name': 'Up-and-Out Min Put',
-            'description': 'Put on minimum of 3 stocks with upper barrier at 110',
-            'nb_stocks': 3,
-            'barrier': 110,
-            'barrier_type': 'up'
-        }
-        print(f"  ✓ Loaded UpAndOut Min Put: {upandout_paths.shape[0]} test paths")
-    except Exception as e:
-        print(f"  ✗ Failed to load UpAndOut Min Put: {e}")
+            # Get test paths for this stock count
+            nb_stocks = config['nb_stocks']
+            test_paths = test_paths_by_stock.get(nb_stocks)
 
-    # Load DKO Lookback Put
-    try:
-        with open(os.path.join(MODELS_DIR, 'dko_lookback_put.pkl'), 'rb') as f:
-            dko_model = pickle.load(f)
+            if test_paths is None:
+                print(f"  ✗ No test paths available for {game_id}")
+                continue
 
-        dko_test = np.load(os.path.join(PATHS_DIR, 'dko_test.npz'))
-        dko_paths = dko_test['paths']
+            # Store game data
+            GAME_DATA[game_id] = {
+                'srlsm': model_data['srlsm'],
+                'model': model_data['model'],
+                'payoff': model_data['payoff'],
+                'test_paths': test_paths,
+                'price': model_data['price'],
+                'avg_exercise_time': model_data['avg_exercise_time'],
+                'name': config['name'],
+                'description': config['description'],
+                'nb_stocks': config['nb_stocks'],
+                'difficulty': config['difficulty'],
+                'barrier_type': config['barrier_type']
+            }
 
-        GAME_DATA['dko'] = {
-            'srlsm': dko_model['srlsm'],
-            'model': dko_model['model'],
-            'payoff': dko_model['payoff'],
-            'test_paths': dko_paths,
-            'price': dko_model['price'],
-            'avg_exercise_time': dko_model['avg_exercise_time'],
-            'name': 'Double Knock-Out Lookback Put',
-            'description': 'Lookback put with barriers at 90 and 110',
-            'nb_stocks': 1,
-            'barrier_down': 90,
-            'barrier_up': 110,
-            'barrier_type': 'double'
-        }
-        print(f"  ✓ Loaded DKO Lookback Put: {dko_paths.shape[0]} test paths")
-    except Exception as e:
-        print(f"  ✗ Failed to load DKO Lookback Put: {e}")
+            # Add barrier information
+            if 'barrier' in config:
+                GAME_DATA[game_id]['barrier'] = config['barrier']
+            if 'barrier_up' in config:
+                GAME_DATA[game_id]['barrier_up'] = config['barrier_up']
+            if 'barrier_down' in config:
+                GAME_DATA[game_id]['barrier_down'] = config['barrier_down']
+
+            print(f"  ✓ Loaded {config['name']}")
+        except Exception as e:
+            print(f"  ✗ Failed to load {config['name']}: {e}")
 
     print(f"\nLoaded {len(GAME_DATA)} games successfully!")
 
@@ -93,7 +188,8 @@ def get_game_info():
             'name': data['name'],
             'description': data['description'],
             'nb_stocks': data['nb_stocks'],
-            'strike': data['model'].spot,
+            'difficulty': data['difficulty'],
+            'strike': 100,  # K=100 for all games
             'maturity': data['model'].maturity,
             'nb_dates': data['model'].nb_dates,
             'price': float(data['price']),
@@ -116,7 +212,7 @@ def start_game():
     Start a new game by selecting a random test path and computing machine decisions.
 
     Query params:
-        product: 'upandout' or 'dko'
+        product: game ID (e.g., 'upandoutcall', 'downandoutbskput', etc.)
 
     Returns:
         {
@@ -128,10 +224,10 @@ def start_game():
             'game_info': {...}
         }
     """
-    product = request.args.get('product', 'upandout')
+    product = request.args.get('product', 'upandoutcall')
 
     if product not in GAME_DATA:
-        return jsonify({'error': f'Invalid product: {product}'}), 400
+        return jsonify({'error': f'Invalid product: {product}. Available: {list(GAME_DATA.keys())}'}), 400
 
     game = GAME_DATA[product]
 
@@ -171,18 +267,20 @@ def start_game():
         'description': game['description'],
         'nb_stocks': game['nb_stocks'],
         'nb_dates': nb_dates,
-        'strike': float(model.spot),
+        'strike': 100,  # K=100 for all games
         'maturity': float(model.maturity),
-        'dt': float(model.dt)
+        'dt': float(model.dt),
+        'difficulty': game['difficulty']
     }
 
     if 'barrier' in game:
         game_info['barrier'] = game['barrier']
-        game_info['barrier_type'] = 'up'
     if 'barrier_down' in game:
         game_info['barrier_down'] = game['barrier_down']
+    if 'barrier_up' in game:
         game_info['barrier_up'] = game['barrier_up']
-        game_info['barrier_type'] = 'double'
+    if 'barrier_type' in game:
+        game_info['barrier_type'] = game['barrier_type']
 
     return jsonify({
         'game_id': f"{product}_{path_idx}",
@@ -199,11 +297,12 @@ def index():
     """Root endpoint - API information."""
     return jsonify({
         'message': 'Optimal Stopping Game API',
-        'version': '1.0.0',
+        'version': '2.0.0',
+        'games_available': len(GAME_DATA),
         'endpoints': {
             'health': '/api/health',
             'game_info': '/api/game/info',
-            'start_game': '/api/game/start?product={upandout|dko}'
+            'start_game': '/api/game/start?product={game_id}'
         },
         'frontend': 'Please run the frontend application on port 3000',
         'status': 'running'
@@ -215,7 +314,8 @@ def health_check():
     """Health check endpoint."""
     return jsonify({
         'status': 'ok',
-        'games_loaded': list(GAME_DATA.keys())
+        'games_loaded': list(GAME_DATA.keys()),
+        'total_games': len(GAME_DATA)
     })
 
 
@@ -228,7 +328,8 @@ if __name__ == '__main__':
     print("Endpoints:")
     print("  GET /api/health")
     print("  GET /api/game/info")
-    print("  GET /api/game/start?product={upandout|dko}")
+    print("  GET /api/game/start?product={game_id}")
+    print(f"\nAvailable games: {list(GAME_DATA.keys())}")
     print("\n")
 
     app.run(debug=True, host='0.0.0.0', port=5000)

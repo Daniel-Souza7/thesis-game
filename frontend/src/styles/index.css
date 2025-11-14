@@ -726,6 +726,21 @@ body::after {
   color: #fff;
 }
 
+.difficulty-badge.difficulty-impossible {
+  background: #ff00ff;
+  color: #000;
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px #ff00ff;
+  }
+  50% {
+    box-shadow: 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+  }
+}
+
 .game-item-description {
   font-size: 9px;
   color: #ffff00;

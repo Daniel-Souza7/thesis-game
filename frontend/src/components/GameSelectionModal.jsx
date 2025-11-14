@@ -2,17 +2,62 @@ import React from 'react'
 
 const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
   const games = [
+    // MEDIUM
     {
-      id: 'upandout',
-      name: 'Up-and-Out Min Put',
-      description: '3 stocks, upper barrier at 110',
+      id: 'upandoutcall',
+      name: 'UpAndOutCall',
+      description: '1 stock, upper barrier at 130',
       difficulty: 'Medium'
     },
     {
-      id: 'dko',
-      name: 'Double Knock-Out Lookback Put',
-      description: '1 stock, barriers at 90 and 110',
+      id: 'downandoutbskput',
+      name: 'DownAndOutBskPut',
+      description: '3 stocks, lower barrier at 70',
+      difficulty: 'Medium'
+    },
+    {
+      id: 'doublebarriermaxcall',
+      name: 'DoubleBarrierMaxCall',
+      description: '7 stocks, barriers at 85 and 130',
+      difficulty: 'Medium'
+    },
+    // HARD
+    {
+      id: 'randomlymovingbarriercall',
+      name: 'RandomlyMovingBarrierCall',
+      description: '1 stock, moving barrier at 125',
       difficulty: 'Hard'
+    },
+    {
+      id: 'upandoutminput',
+      name: 'UpAndOutMinPut',
+      description: '3 stocks, upper barrier at 120',
+      difficulty: 'Hard'
+    },
+    {
+      id: 'downandoutbest2call',
+      name: 'DownAndOutBest2Call',
+      description: '7 stocks, lower barrier at 85',
+      difficulty: 'Hard'
+    },
+    // IMPOSSIBLE
+    {
+      id: 'doublebarrierlookbackfloatingput',
+      name: 'DoubleBarrierLookbackFloatingPut',
+      description: '1 stock, barriers at 85 and 115',
+      difficulty: 'Impossible'
+    },
+    {
+      id: 'doublebarrierrankweightedbskcall',
+      name: 'DoubleBarrierRankWeightedBskCall',
+      description: '3 stocks, barriers at 80 and 125',
+      difficulty: 'Impossible'
+    },
+    {
+      id: 'doublemovingbarrierdispersioncall',
+      name: 'DoubleMovingBarrierDispersionCall',
+      description: '7 stocks, barriers at 85 and 115',
+      difficulty: 'Impossible'
     }
   ]
 

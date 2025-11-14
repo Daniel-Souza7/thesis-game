@@ -81,6 +81,13 @@ const InfoPanel = ({
       )}
 
       <div className="info-item">
+        <span className="info-label">STRIKE PRICE</span>
+        <div className="info-value" style={{ fontSize: '14px', color: '#ffff00' }}>
+          K = $100
+        </div>
+      </div>
+
+      <div className="info-item">
         <span className="info-label">CURRENT PRICES</span>
         {currentPrices.map((price, idx) => (
           <div key={idx} className="info-value" style={{ fontSize: '12px' }}>

@@ -2,9 +2,9 @@
 Pre-training script for SRLSM models and path generation.
 
 This script:
-1. Generates training paths (50,000) for each product
-2. Trains SRLSM models on these paths
-3. Generates test paths (500) for in-game play
+1. Generates shared training paths (50,000) for each stock count (1, 3, 7)
+2. Trains SRLSM models for all 9 games using shared paths
+3. Generates shared test paths (2,000) for each stock count
 4. Saves models and paths to disk
 
 Run this BEFORE starting the API server.
@@ -14,7 +14,20 @@ import numpy as np
 import pickle
 import os
 from backend.models.black_scholes import BlackScholes
-from backend.payoffs.barrier_options import UpAndOutMinPut, DoubleKnockOutLookbackFloatingPut
+from backend.payoffs.game_payoffs import (
+    # MEDIUM
+    UpAndOutCall,
+    DownAndOutBasketPut,
+    DoubleBarrierMaxCall,
+    # HARD
+    StepBarrierCall,
+    GameUpAndOutMinPut,
+    DownAndOutBestOfKCall,
+    # IMPOSSIBLE
+    DoubleBarrierLookbackFloatingPut,
+    DoubleBarrierRankWeightedBasketCall,
+    DoubleStepBarrierDispersionCall
+)
 from backend.algorithms.srlsm import SRLSM
 
 
@@ -23,7 +36,7 @@ PARAMS = {
     'drift': 0.02,
     'volatility': 0.2,
     'spot': 100,
-    'strike': 100,
+    'strike': 100,  # K=100 for all games
     'dividend': 0,
     'maturity': 1,
     'nb_dates': 12,
@@ -44,39 +57,147 @@ PATHS_DIR = os.path.join(DATA_DIR, 'paths')
 MODELS_DIR = os.path.join(DATA_DIR, 'trained_models')
 
 
-def train_upandout_minput():
-    """Train SRLSM for UpAndOut Min Put (3 stocks, barrier=110)."""
-    print("\n" + "="*60)
-    print("Training UpAndOut Min Put (3 stocks)")
-    print("="*60)
+# Game configurations in order
+GAME_CONFIGS = [
+    # MEDIUM
+    {
+        'id': 'upandoutcall',
+        'name': 'UpAndOutCall',
+        'nb_stocks': 1,
+        'difficulty': 'Medium',
+        'payoff_class': UpAndOutCall,
+        'payoff_kwargs': {'strike': 100, 'barrier': 130}
+    },
+    {
+        'id': 'downandoutbskput',
+        'name': 'DownAndOutBskPut',
+        'nb_stocks': 3,
+        'difficulty': 'Medium',
+        'payoff_class': DownAndOutBasketPut,
+        'payoff_kwargs': {'strike': 100, 'barrier': 70}
+    },
+    {
+        'id': 'doublebarriermaxcall',
+        'name': 'DoubleBarrierMaxCall',
+        'nb_stocks': 7,
+        'difficulty': 'Medium',
+        'payoff_class': DoubleBarrierMaxCall,
+        'payoff_kwargs': {'strike': 100, 'barrier_up': 130, 'barrier_down': 85}
+    },
+    # HARD
+    {
+        'id': 'randomlymovingbarriercall',
+        'name': 'RandomlyMovingBarrierCall',
+        'nb_stocks': 1,
+        'difficulty': 'Hard',
+        'payoff_class': StepBarrierCall,
+        'payoff_kwargs': {'strike': 100, 'initial_barrier': 125, 'seed': 42}
+    },
+    {
+        'id': 'upandoutminput',
+        'name': 'UpAndOutMinPut',
+        'nb_stocks': 3,
+        'difficulty': 'Hard',
+        'payoff_class': GameUpAndOutMinPut,
+        'payoff_kwargs': {'strike': 100, 'barrier': 120}
+    },
+    {
+        'id': 'downandoutbest2call',
+        'name': 'DownAndOutBest2Call',
+        'nb_stocks': 7,
+        'difficulty': 'Hard',
+        'payoff_class': DownAndOutBestOfKCall,
+        'payoff_kwargs': {'strike': 100, 'barrier': 85, 'k': 2}
+    },
+    # IMPOSSIBLE
+    {
+        'id': 'doublebarrierlookbackfloatingput',
+        'name': 'DoubleBarrierLookbackFloatingPut',
+        'nb_stocks': 1,
+        'difficulty': 'Impossible',
+        'payoff_class': DoubleBarrierLookbackFloatingPut,
+        'payoff_kwargs': {'strike': 100, 'barrier_up': 115, 'barrier_down': 85}
+    },
+    {
+        'id': 'doublebarrierrankweightedbskcall',
+        'name': 'DoubleBarrierRankWeightedBskCall',
+        'nb_stocks': 3,
+        'difficulty': 'Impossible',
+        'payoff_class': DoubleBarrierRankWeightedBasketCall,
+        'payoff_kwargs': {'strike': 100, 'barrier_up': 125, 'barrier_down': 80}
+    },
+    {
+        'id': 'doublemovingbarrierdispersioncall',
+        'name': 'DoubleMovingBarrierDispersionCall',
+        'nb_stocks': 7,
+        'difficulty': 'Impossible',
+        'payoff_class': DoubleStepBarrierDispersionCall,
+        'payoff_kwargs': {'strike': 100, 'barrier_up': 115, 'barrier_down': 85, 'seed': 42}
+    }
+]
 
-    # Create model (3 stocks)
+
+def generate_shared_paths(nb_stocks, train_seed, test_seed):
+    """Generate shared training and test paths for a given number of stocks."""
+    print(f"\n{'='*60}")
+    print(f"Generating shared paths for {nb_stocks} stock(s)")
+    print(f"{'='*60}")
+
+    # Create model for training paths
     model = BlackScholes(
         drift=PARAMS['drift'],
         volatility=PARAMS['volatility'],
         spot=PARAMS['spot'],
-        nb_stocks=3,  # 3 stocks
+        nb_stocks=nb_stocks,
         nb_paths=NB_TRAIN_PATHS,
         nb_dates=PARAMS['nb_dates'],
         maturity=PARAMS['maturity'],
         dividend=PARAMS['dividend']
     )
 
-    # Create payoff (barrier = 110)
-    payoff = UpAndOutMinPut(strike=PARAMS['strike'], barrier=110)
-
     # Generate training paths
-    print(f"\nGenerating {NB_TRAIN_PATHS} training paths...")
-    train_paths, _ = model.generate_paths(seed=42)
-
-    # Save training paths
-    train_path_file = os.path.join(PATHS_DIR, 'upandout_train.npz')
+    print(f"Generating {NB_TRAIN_PATHS} training paths...")
+    train_paths, _ = model.generate_paths(seed=train_seed)
+    train_path_file = os.path.join(PATHS_DIR, f'train_{nb_stocks}stock.npz')
     np.savez_compressed(train_path_file, paths=train_paths)
     print(f"Saved training paths to {train_path_file}")
     print(f"Shape: {train_paths.shape}")
 
+    # Generate test paths
+    print(f"Generating {NB_TEST_PATHS} test paths...")
+    model.nb_paths = NB_TEST_PATHS
+    test_paths, _ = model.generate_paths(seed=test_seed)
+    test_path_file = os.path.join(PATHS_DIR, f'test_{nb_stocks}stock.npz')
+    np.savez_compressed(test_path_file, paths=test_paths)
+    print(f"Saved test paths to {test_path_file}")
+    print(f"Shape: {test_paths.shape}")
+
+    return train_paths, test_paths
+
+
+def train_game(config, train_paths):
+    """Train SRLSM for a specific game configuration."""
+    print(f"\n{'='*60}")
+    print(f"Training {config['name']} ({config['difficulty']})")
+    print(f"{'='*60}")
+
+    # Create model
+    model = BlackScholes(
+        drift=PARAMS['drift'],
+        volatility=PARAMS['volatility'],
+        spot=PARAMS['spot'],
+        nb_stocks=config['nb_stocks'],
+        nb_paths=NB_TRAIN_PATHS,
+        nb_dates=PARAMS['nb_dates'],
+        maturity=PARAMS['maturity'],
+        dividend=PARAMS['dividend']
+    )
+
+    # Create payoff
+    payoff = config['payoff_class'](**config['payoff_kwargs'])
+
     # Train SRLSM
-    print("\nTraining SRLSM model...")
+    print("Training SRLSM model...")
     srlsm = SRLSM(
         model=model,
         payoff=payoff,
@@ -94,104 +215,17 @@ def train_upandout_minput():
     print(f"  Average exercise time: {avg_exercise_time:.4f}")
 
     # Save trained model
-    model_file = os.path.join(MODELS_DIR, 'upandout_minput.pkl')
+    model_file = os.path.join(MODELS_DIR, f"{config['id']}.pkl")
     with open(model_file, 'wb') as f:
         pickle.dump({
             'srlsm': srlsm,
             'model': model,
             'payoff': payoff,
             'price': price,
-            'avg_exercise_time': avg_exercise_time
+            'avg_exercise_time': avg_exercise_time,
+            'config': config
         }, f)
     print(f"Saved trained model to {model_file}")
-
-    # Generate test paths
-    print(f"\nGenerating {NB_TEST_PATHS} test paths...")
-    model.nb_paths = NB_TEST_PATHS
-    test_paths, _ = model.generate_paths(seed=123)
-
-    test_path_file = os.path.join(PATHS_DIR, 'upandout_test.npz')
-    np.savez_compressed(test_path_file, paths=test_paths)
-    print(f"Saved test paths to {test_path_file}")
-    print(f"Shape: {test_paths.shape}")
-
-    return srlsm
-
-
-def train_dko_lookback_put():
-    """Train SRLSM for Double Knock-Out Lookback Put (1 stock, barriers=90/110)."""
-    print("\n" + "="*60)
-    print("Training Double Knock-Out Lookback Put (1 stock)")
-    print("="*60)
-
-    # Create model (1 stock)
-    model = BlackScholes(
-        drift=PARAMS['drift'],
-        volatility=PARAMS['volatility'],
-        spot=PARAMS['spot'],
-        nb_stocks=1,  # 1 stock
-        nb_paths=NB_TRAIN_PATHS,
-        nb_dates=PARAMS['nb_dates'],
-        maturity=PARAMS['maturity'],
-        dividend=PARAMS['dividend']
-    )
-
-    # Create payoff (barriers = 90 and 110)
-    payoff = DoubleKnockOutLookbackFloatingPut(
-        strike=PARAMS['strike'],
-        barrier_down=90,
-        barrier_up=110
-    )
-
-    # Generate training paths
-    print(f"\nGenerating {NB_TRAIN_PATHS} training paths...")
-    train_paths, _ = model.generate_paths(seed=43)
-
-    # Save training paths
-    train_path_file = os.path.join(PATHS_DIR, 'dko_train.npz')
-    np.savez_compressed(train_path_file, paths=train_paths)
-    print(f"Saved training paths to {train_path_file}")
-    print(f"Shape: {train_paths.shape}")
-
-    # Train SRLSM
-    print("\nTraining SRLSM model...")
-    srlsm = SRLSM(
-        model=model,
-        payoff=payoff,
-        hidden_size=PARAMS['hidden_size'],
-        factors=PARAMS['factors'],
-        train_ITM_only=PARAMS['train_ITM_only'],
-        use_payoff_as_input=PARAMS['use_payoff_as_input']
-    )
-
-    price, time_gen = srlsm.price(train_eval_split=2, stock_paths=train_paths)
-    avg_exercise_time = srlsm.get_exercise_time()
-
-    print(f"\nTraining complete!")
-    print(f"  Option price: {price:.4f}")
-    print(f"  Average exercise time: {avg_exercise_time:.4f}")
-
-    # Save trained model
-    model_file = os.path.join(MODELS_DIR, 'dko_lookback_put.pkl')
-    with open(model_file, 'wb') as f:
-        pickle.dump({
-            'srlsm': srlsm,
-            'model': model,
-            'payoff': payoff,
-            'price': price,
-            'avg_exercise_time': avg_exercise_time
-        }, f)
-    print(f"Saved trained model to {model_file}")
-
-    # Generate test paths
-    print(f"\nGenerating {NB_TEST_PATHS} test paths...")
-    model.nb_paths = NB_TEST_PATHS
-    test_paths, _ = model.generate_paths(seed=124)
-
-    test_path_file = os.path.join(PATHS_DIR, 'dko_test.npz')
-    np.savez_compressed(test_path_file, paths=test_paths)
-    print(f"Saved test paths to {test_path_file}")
-    print(f"Shape: {test_paths.shape}")
 
     return srlsm
 
@@ -199,24 +233,46 @@ def train_dko_lookback_put():
 def main():
     """Main training script."""
     print("\n" + "="*60)
-    print("SRLSM Model Training Script")
+    print("SRLSM Model Training Script - All 9 Games")
     print("="*60)
     print(f"\nParameters:")
     for key, value in PARAMS.items():
         print(f"  {key}: {value}")
     print(f"\nTraining paths: {NB_TRAIN_PATHS}")
     print(f"Test paths: {NB_TEST_PATHS}")
+    print(f"\nGames to train: {len(GAME_CONFIGS)}")
 
     # Create output directories
     os.makedirs(PATHS_DIR, exist_ok=True)
     os.makedirs(MODELS_DIR, exist_ok=True)
 
-    # Train both models
-    train_upandout_minput()
-    train_dko_lookback_put()
+    # Generate shared paths for each stock count
+    shared_paths = {}
+
+    # 1 stock paths (seed 42 for train, 142 for test)
+    train_1stock, test_1stock = generate_shared_paths(1, train_seed=42, test_seed=142)
+    shared_paths[1] = {'train': train_1stock, 'test': test_1stock}
+
+    # 3 stock paths (seed 43 for train, 143 for test)
+    train_3stock, test_3stock = generate_shared_paths(3, train_seed=43, test_seed=143)
+    shared_paths[3] = {'train': train_3stock, 'test': test_3stock}
+
+    # 7 stock paths (seed 44 for train, 144 for test)
+    train_7stock, test_7stock = generate_shared_paths(7, train_seed=44, test_seed=144)
+    shared_paths[7] = {'train': train_7stock, 'test': test_7stock}
+
+    # Train all games
+    print(f"\n{'='*60}")
+    print("Training all games...")
+    print(f"{'='*60}")
+
+    for config in GAME_CONFIGS:
+        nb_stocks = config['nb_stocks']
+        train_paths = shared_paths[nb_stocks]['train']
+        train_game(config, train_paths)
 
     print("\n" + "="*60)
-    print("All models trained successfully!")
+    print("All 9 models trained successfully!")
     print("="*60)
     print(f"\nSaved to:")
     print(f"  Models: {MODELS_DIR}")
