@@ -5,57 +5,66 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
     // MEDIUM
     {
       id: 'upandoutcall',
-      name: 'UpAndOutCall',
+      name_line1: 'UpAndOut',
+      name_line2: 'Call',
       description: '1 stock, upper barrier at 130',
       difficulty: 'Medium'
     },
     {
       id: 'downandoutbskput',
-      name: 'DownAndOutBskPut',
+      name_line1: 'DownAndOut',
+      name_line2: 'BskPut',
       description: '3 stocks, lower barrier at 70',
       difficulty: 'Medium'
     },
     {
       id: 'doublebarriermaxcall',
-      name: 'DoubleBarrierMaxCall',
+      name_line1: 'DoubleBarrier',
+      name_line2: 'MaxCall',
       description: '7 stocks, barriers at 85 and 130',
       difficulty: 'Medium'
     },
     // HARD
     {
       id: 'randomlymovingbarriercall',
-      name: 'RandomlyMovingBarrierCall',
+      name_line1: 'RandomlyMoving',
+      name_line2: 'BarrierCall',
       description: '1 stock, moving barrier at 125',
       difficulty: 'Hard'
     },
     {
       id: 'upandoutminput',
-      name: 'UpAndOutMinPut',
+      name_line1: 'UpAndOut',
+      name_line2: 'MinPut',
       description: '3 stocks, upper barrier at 120',
       difficulty: 'Hard'
     },
     {
       id: 'downandoutbest2call',
-      name: 'DownAndOutBest2Call',
+      name_line1: 'DownAndOut',
+      name_line2: 'Best2Call',
       description: '7 stocks, lower barrier at 85',
       difficulty: 'Hard'
     },
     // IMPOSSIBLE
     {
       id: 'doublebarrierlookbackfloatingput',
-      name: 'DoubleBarrierLookbackFloatingPut',
+      name_line1: 'DoubleBarrier',
+      name_line2: 'LookbackFloatingPut',
       description: '1 stock, barriers at 85 and 115',
       difficulty: 'Impossible'
     },
     {
       id: 'doublebarrierrankweightedbskcall',
-      name: 'DoubleBarrierRankWeightedBskCall',
+      name_line1: 'DoubleBarrier',
+      name_line2: 'RankWeightedBskCall',
       description: '3 stocks, barriers at 80 and 125',
       difficulty: 'Impossible'
     },
     {
       id: 'doublemovingbarrierdispersioncall',
-      name: 'DoubleMovingBarrierDispersionCall',
+      name_line1: 'DoubleMoving',
+      name_line2: 'BarrierDispersionCall',
       description: '7 stocks, barriers at 85 and 115',
       difficulty: 'Impossible'
     }
@@ -82,7 +91,10 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
               onClick={() => handleSelect(game.id)}
             >
               <div className="game-item-header">
-                <h3 className="game-item-title">{game.name}</h3>
+                <h3 className="game-item-title">
+                  <div>{game.name_line1}</div>
+                  <div>{game.name_line2}</div>
+                </h3>
                 <span className={`difficulty-badge difficulty-${game.difficulty.toLowerCase()}`}>
                   {game.difficulty}
                 </span>
