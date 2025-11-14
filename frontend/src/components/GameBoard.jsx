@@ -159,6 +159,13 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
     }
   }
 
+  // Lock machine payoff when we pass machine exercise date
+  useEffect(() => {
+    if (currentStep >= machineExerciseDate && machinePayoff === null) {
+      setMachinePayoff(payoffs_timeline[machineExerciseDate])
+    }
+  }, [currentStep, machineExerciseDate, machinePayoff, payoffs_timeline])
+
   // When animation reaches machine exercise date or maturity
   useEffect(() => {
     if (isAnimating && playerDecision) {
@@ -245,6 +252,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
               playerExerciseDate={playerExerciseDate}
               machineExerciseDate={machineExerciseDate}
               revealedUpToStep={revealedUpToStep}
+              isAnimating={isAnimating}
             />
 
             <InfoPanel

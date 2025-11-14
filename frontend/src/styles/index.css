@@ -119,6 +119,7 @@ body::after {
   border-radius: 10px;
   padding: 20px;
   box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.2);
+  position: relative;
 }
 
 .chart-header {
@@ -139,6 +140,48 @@ body::after {
   color: #ff00ff;
   text-shadow: 0 0 5px #ff00ff;
   text-align: right;
+}
+
+.fast-forward-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffff00;
+  text-shadow:
+    0 0 10px #ffff00,
+    0 0 20px #ffff00,
+    0 0 30px #ffff00,
+    0 0 40px #ffff00;
+  z-index: 10;
+  pointer-events: none;
+  animation: flash 0.5s ease-in-out infinite;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 20px 40px;
+  border: 4px solid #ffff00;
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(255, 255, 0, 0.8);
+}
+
+@keyframes flash {
+  0%, 100% {
+    opacity: 1;
+    text-shadow:
+      0 0 10px #ffff00,
+      0 0 20px #ffff00,
+      0 0 30px #ffff00,
+      0 0 40px #ffff00;
+  }
+  50% {
+    opacity: 0.5;
+    text-shadow:
+      0 0 5px #ffff00,
+      0 0 10px #ffff00,
+      0 0 15px #ffff00,
+      0 0 20px #ffff00;
+  }
 }
 
 /* Info panel */

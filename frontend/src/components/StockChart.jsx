@@ -1,7 +1,7 @@
 import React from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
-const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineExerciseDate, revealedUpToStep }) => {
+const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineExerciseDate, revealedUpToStep, isAnimating }) => {
   // Prepare data for chart (only show up to current step)
   const chartData = []
   for (let i = 0; i <= currentStep; i++) {
@@ -37,6 +37,11 @@ const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineEx
         <div className="chart-title">STOCK PRICE PATHS</div>
         <div className="chart-game-name">{gameInfo.name}</div>
       </div>
+      {isAnimating && (
+        <div className="fast-forward-indicator">
+          FAST FORWARD
+        </div>
+      )}
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#333" />
