@@ -623,8 +623,10 @@ body::after {
   border: 6px solid #00ff00;
   border-radius: 15px;
   padding: 30px;
-  max-width: 600px;
+  max-width: 1200px;
   width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
   box-shadow: 0 0 40px rgba(0, 255, 0, 0.8);
   animation: slideIn 0.3s;
 }
@@ -670,25 +672,40 @@ body::after {
 }
 
 .game-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   margin-bottom: 25px;
+}
+
+@media (max-width: 900px) {
+  .game-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .game-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .game-item {
   background: #0a0a0a;
   border: 3px solid #00ffff;
   border-radius: 10px;
-  padding: 20px;
+  padding: 15px;
   cursor: pointer;
   transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
 }
 
 .game-item:hover {
   border-color: #ff00ff;
   box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
-  transform: translateX(5px);
+  transform: scale(1.05);
 }
 
 .game-item.active {
@@ -704,9 +721,10 @@ body::after {
 }
 
 .game-item-title {
-  font-size: 12px;
+  font-size: 10px;
   color: #00ffff;
   text-shadow: 0 0 5px #00ffff;
+  line-height: 1.4;
 }
 
 .difficulty-badge {
@@ -742,10 +760,11 @@ body::after {
 }
 
 .game-item-description {
-  font-size: 9px;
+  font-size: 8px;
   color: #ffff00;
   line-height: 1.5;
   font-family: 'Press Start 2P', cursive;
+  flex-grow: 1;
 }
 
 .current-game-badge {
