@@ -3,6 +3,7 @@ import StockChart from './StockChart'
 import InfoPanel from './InfoPanel'
 import ControlPanel from './ControlPanel'
 import ResultsDisplay from './ResultsDisplay'
+import GameSelectionModal from './GameSelectionModal'
 
 const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gameState, setGameState }) => {
   const [currentStep, setCurrentStep] = useState(0)
@@ -14,6 +15,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   const [isAnimating, setIsAnimating] = useState(false)
   const [showMachineDecision, setShowMachineDecision] = useState(false) // NEW: control when to show machine decision
   const [machineDecisionFlash, setMachineDecisionFlash] = useState(false) // NEW: flash effect
+  const [showGameSelection, setShowGameSelection] = useState(false) // NEW: game selection modal
 
   const animationRef = useRef(null)
 
@@ -174,11 +176,15 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   }
 
   const getMachineDecisionText = () => {
-    if (!showMachineDecision) return '...'
+    if (!showMachineDecision) return '-'
 
-    if (currentStep < machineExerciseDate) {
+    // Show decision for PREVIOUS step to avoid spoiling
+    const displayStep = currentStep - 1
+    if (displayStep < 1) return '-'
+
+    if (displayStep < machineExerciseDate) {
       return 'HOLD'
-    } else if (currentStep === machineExerciseDate) {
+    } else if (displayStep === machineExerciseDate) {
       return 'EXERCISE'
     } else {
       return 'EXERCISED'
@@ -186,15 +192,34 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   }
 
   const getMachineCurrentPayoff = () => {
-    // If machine hasn't exercised yet, show current payoff
     // If machine has exercised, show locked payoff
     if (machinePayoff !== null) {
       return machinePayoff
     }
-    return payoffs_timeline[currentStep]
+
+    // Show payoff for PREVIOUS step to avoid spoiling
+    const displayStep = currentStep - 1
+    if (displayStep < 1) return 0
+
+    return payoffs_timeline[displayStep]
   }
 
   const isPlayerTurn = gameState === 'playing' && !playerDecision && !isAnimating && currentStep > 0 && currentStep <= nb_dates
+
+  // Determine current game ID based on game name
+  const getCurrentGameId = () => {
+    if (game_info.name.includes('Up-and-Out')) return 'upandout'
+    if (game_info.name.includes('Lookback')) return 'dko'
+    return 'upandout'
+  }
+
+  const handleOpenGameSelection = () => {
+    setShowGameSelection(true)
+  }
+
+  const handleSelectGame = (gameId) => {
+    onSwitchProduct(gameId)
+  }
 
   return (
     <div>
@@ -206,7 +231,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
           machineExerciseDate={machineExerciseDate}
           gameInfo={game_info}
           onPlayAgain={onPlayAgain}
-          onSwitchProduct={onSwitchProduct}
+          onSwitchProduct={handleOpenGameSelection}
         />
       ) : (
         <>
@@ -235,12 +260,21 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
           <ControlPanel
             onHold={handleHold}
             onExercise={handleExercise}
-            onSwitchProduct={onSwitchProduct}
+            onSwitchProduct={handleOpenGameSelection}
             isPlayerTurn={isPlayerTurn}
             isAnimating={isAnimating}
             currentProduct={game_info.name}
           />
         </>
+      )}
+
+      {/* Game Selection Modal */}
+      {showGameSelection && (
+        <GameSelectionModal
+          onClose={() => setShowGameSelection(false)}
+          onSelectGame={handleSelectGame}
+          currentGame={getCurrentGameId()}
+        />
       )}
     </div>
   )

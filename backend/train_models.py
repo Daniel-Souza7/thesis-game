@@ -26,7 +26,7 @@ PARAMS = {
     'strike': 100,
     'dividend': 0,
     'maturity': 1,
-    'nb_dates': 10,
+    'nb_dates': 12,
     'hidden_size': 20,
     'factors': (1.0, 1.0, 1.0),
     'train_ITM_only': True,
@@ -35,7 +35,7 @@ PARAMS = {
 
 # Training and test set sizes
 NB_TRAIN_PATHS = 50000
-NB_TEST_PATHS = 500
+NB_TEST_PATHS = 2000
 
 # Output directories (relative to this script's location)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
