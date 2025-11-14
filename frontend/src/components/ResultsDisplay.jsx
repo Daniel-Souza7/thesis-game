@@ -29,6 +29,9 @@ const ResultsDisplay = ({
   const playerHitBarrier = playerPayoff === 0
   const machineHitBarrier = machinePayoff === 0
 
+  // If both hit barrier, they hit it at the same step (the player's exercise date)
+  const machineBarrierStep = (machineHitBarrier && playerHitBarrier) ? playerExerciseDate : machineExerciseDate
+
   return (
     <div className="results-screen">
       <div className="results-title">GAME OVER</div>
@@ -52,7 +55,7 @@ const ResultsDisplay = ({
             ${machinePayoff?.toFixed(2) || '0.00'}
           </div>
           <div className="score-title" style={{ marginTop: '10px', fontSize: '8px' }}>
-            {machineHitBarrier ? `Hit barrier at step ${machineExerciseDate}` : `Exercised at step ${machineExerciseDate}`}
+            {machineHitBarrier ? `Hit barrier at step ${machineBarrierStep}` : `Exercised at step ${machineExerciseDate}`}
           </div>
         </div>
       </div>

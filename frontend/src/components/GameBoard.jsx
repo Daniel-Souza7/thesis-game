@@ -159,9 +159,11 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
     }
   }
 
-  // Lock machine payoff when we pass machine exercise date
+  // Lock machine payoff when displayStep reaches machine exercise date
+  // displayStep = currentStep - 1, so we set payoff when currentStep > machineExerciseDate
   useEffect(() => {
-    if (currentStep >= machineExerciseDate && machinePayoff === null) {
+    const displayStep = currentStep - 1
+    if (displayStep >= machineExerciseDate && machinePayoff === null) {
       setMachinePayoff(payoffs_timeline[machineExerciseDate])
     }
   }, [currentStep, machineExerciseDate, machinePayoff, payoffs_timeline])

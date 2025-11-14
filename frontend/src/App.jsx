@@ -101,7 +101,7 @@ function App() {
       <div className="floating-buttons">
         {/* Info Button */}
         <a
-          href="/info"
+          href="/info.html"
           target="_blank"
           rel="noopener noreferrer"
           className="info-button"
