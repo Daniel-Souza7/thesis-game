@@ -70,7 +70,7 @@ const ResultsDisplay = ({
         <button className="arcade-button switch" onClick={onPlayAgain}>
           PLAY AGAIN
         </button>
-        <button className="arcade-button switch" onClick={onSwitchProduct}>
+        <button className="arcade-button start" onClick={onSwitchProduct}>
           SWITCH GAME
         </button>
       </div>
