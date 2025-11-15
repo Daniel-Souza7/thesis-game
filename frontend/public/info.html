@@ -362,7 +362,7 @@
       <!-- Buttons -->
       <div class="button-group">
         <button id="backButton" onclick="prevTab()" class="back-button" style="display: none;">BACK</button>
-        <button onclick="window.close()" class="close-button">PLAY</button>
+        <button onclick="startPlaying()" class="close-button">PLAY</button>
         <button id="nextButton" onclick="nextTab()" class="next-button">NEXT</button>
       </div>
     </div>
@@ -370,6 +370,19 @@
     <script>
       let currentTab = 1;
       const totalTabs = 5;
+
+      function startPlaying() {
+        // Mark that user has visited the info page
+        sessionStorage.setItem('visitedInfo', 'true');
+
+        // If opened in a new tab (from info button during game), close it
+        if (window.opener) {
+          window.close();
+        } else {
+          // Otherwise redirect to main game (first visit)
+          window.location.href = '/';
+        }
+      }
 
       function updateButtons() {
         const backBtn = document.getElementById('backButton');

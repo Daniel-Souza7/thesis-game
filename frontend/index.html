@@ -7,6 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script>
+      // Redirect to info page on first visit
+      if (!sessionStorage.getItem('visitedInfo')) {
+        window.location.href = '/info.html';
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
