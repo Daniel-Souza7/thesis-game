@@ -209,7 +209,7 @@
         <h2>Welcome to the Optimal Stopping Game!</h2>
         <p style="margin-bottom: 15px;">
           This interactive game is part of my Master's thesis on optimal stopping problems
-          in quantitative finance. You'll compete against a pre-trained SRLSM (Special Randomized
+          in quantitative finance. You'll compete against a pre-trained SRLSM (Stateful Randomized
           Least Squares Monte Carlo) algorithm to maximize payoffs on exotic barrier options.
         </p>
         <p>
@@ -222,26 +222,25 @@
         <h2>How to Play</h2>
 
         <h3>Objective:</h3>
-        <p>Decide when to exercise your option to maximize your payoff. You compete against a trained AI algorithm.</p>
+        <p>Decide when to exercise your option to maximize your payoff. You compete against a trained AI algorithm. Can you beat the machine?</p>
 
         <h3>Game Flow:</h3>
         <ul>
-          <li><strong>Step Forward:</strong> Observe stock prices evolving over time</li>
-          <li><strong>Hold:</strong> Wait and see the next price movement</li>
-          <li><strong>Exercise:</strong> Lock in your current payoff and end your game</li>
+          <li><strong>Hold:</strong> Wait and bet that the next price movement is favorable</li>
+          <li><strong>Exercise:</strong> Lock in your current payoff and close your game</li>
         </ul>
 
         <h3>Important Notes:</h3>
         <ul>
+          <li><strong>Machine Decision:</strong> The AI's decision is revealed after yours</li>
           <li><strong>Barriers:</strong> If a barrier is hit, your payoff becomes $0</li>
-          <li><strong>Machine Decision:</strong> The AI's exercise decision is revealed after yours</li>
           <li><strong>Payoff Formula:</strong> Each game has a unique payoff structure shown in the info panel</li>
         </ul>
 
         <h3>Difficulty Levels:</h3>
         <ul>
-          <li><strong>Medium:</strong> Simple barrier options (1-7 stocks)</li>
-          <li><strong>Hard:</strong> Moving barriers and complex payoffs</li>
+          <li><strong>Medium:</strong> Simple barrier options with the simplest payoffs</li>
+          <li><strong>Hard:</strong> Moving barrier or more complex payoffs</li>
           <li><strong>Impossible:</strong> Exotic options with multiple features</li>
         </ul>
       </div>
