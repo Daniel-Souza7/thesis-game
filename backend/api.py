@@ -34,10 +34,10 @@ GAME_DATA = {}
 LOADED_MODELS_CACHE = {}  # Cache for loaded models (max 1 at a time to save memory)
 MAX_CACHED_MODELS = 1
 
-# Game configurations - LIMITED TO 3 GAMES for 512MB memory constraint
-# One game per difficulty level, using smallest models (1 stock each)
+# Game configurations - ALL 9 GAMES with lazy loading
+# Only 1 model loaded in memory at a time to stay within 512MB
 GAME_CONFIGS = [
-    # MEDIUM (13MB model)
+    # MEDIUM
     {
         'id': 'upandoutcall',
         'name': 'UpAndOutCall',
@@ -47,7 +47,26 @@ GAME_CONFIGS = [
         'barrier': 130,
         'barrier_type': 'up'
     },
-    # HARD (13MB model)
+    {
+        'id': 'downandoutminput',
+        'name': 'DownAndOutMinPut',
+        'description': '3 stocks, lower barrier at 85',
+        'nb_stocks': 3,
+        'difficulty': 'Medium',
+        'barrier': 85,
+        'barrier_type': 'down'
+    },
+    {
+        'id': 'doublebarriermaxcall',
+        'name': 'DoubleBarrierMaxCall',
+        'description': '7 stocks, barriers at 85 and 130',
+        'nb_stocks': 7,
+        'difficulty': 'Medium',
+        'barrier_up': 130,
+        'barrier_down': 85,
+        'barrier_type': 'double'
+    },
+    # HARD
     {
         'id': 'randomlymovingbarriercall',
         'name': 'RandomlyMovingBarrierCall',
@@ -57,7 +76,25 @@ GAME_CONFIGS = [
         'barrier': 125,
         'barrier_type': 'up'
     },
-    # IMPOSSIBLE (13MB model)
+    {
+        'id': 'upandoutminput',
+        'name': 'UpAndOutMinPut',
+        'description': '3 stocks, upper barrier at 120',
+        'nb_stocks': 3,
+        'difficulty': 'Hard',
+        'barrier': 120,
+        'barrier_type': 'up'
+    },
+    {
+        'id': 'downandoutbest2call',
+        'name': 'DownAndOutBest2Call',
+        'description': '7 stocks, lower barrier at 85',
+        'nb_stocks': 7,
+        'difficulty': 'Hard',
+        'barrier': 85,
+        'barrier_type': 'down'
+    },
+    # IMPOSSIBLE
     {
         'id': 'doublebarrierlookbackfloatingput',
         'name': 'DoubleBarrierLookbackFloatingPut',
@@ -67,36 +104,31 @@ GAME_CONFIGS = [
         'barrier_up': 115,
         'barrier_down': 85,
         'barrier_type': 'double'
+    },
+    {
+        'id': 'doublebarrierrankweightedbskcall',
+        'name': 'DoubleBarrierRankWeightedBskCall',
+        'description': '3 stocks, barriers at 80 and 125',
+        'nb_stocks': 3,
+        'difficulty': 'Impossible',
+        'barrier_up': 125,
+        'barrier_down': 80,
+        'barrier_type': 'double'
+    },
+    {
+        'id': 'doublemovingbarrierdispersioncall',
+        'name': 'DoubleMovingBarrierDispersionCall',
+        'description': '7 stocks, moving barriers at 85 and 115',
+        'nb_stocks': 7,
+        'difficulty': 'Impossible',
+        'barrier_up': 115,
+        'barrier_down': 85,
+        'barrier_type': 'double'
     }
 ]
 
-# Full list of all games (commented out for memory constraints)
-# Uncomment and replace GAME_CONFIGS above if deploying with more memory (>1GB)
-"""
-GAME_CONFIGS_FULL = [
-    # MEDIUM
-    {'id': 'upandoutcall', 'name': 'UpAndOutCall', 'description': '1 stock, upper barrier at 130',
-     'nb_stocks': 1, 'difficulty': 'Medium', 'barrier': 130, 'barrier_type': 'up'},
-    {'id': 'downandoutminput', 'name': 'DownAndOutMinPut', 'description': '3 stocks, lower barrier at 85',
-     'nb_stocks': 3, 'difficulty': 'Medium', 'barrier': 85, 'barrier_type': 'down'},
-    {'id': 'doublebarriermaxcall', 'name': 'DoubleBarrierMaxCall', 'description': '7 stocks, barriers at 85 and 130',
-     'nb_stocks': 7, 'difficulty': 'Medium', 'barrier_up': 130, 'barrier_down': 85, 'barrier_type': 'double'},
-    # HARD
-    {'id': 'randomlymovingbarriercall', 'name': 'RandomlyMovingBarrierCall', 'description': '1 stock, moving barrier starting at 125',
-     'nb_stocks': 1, 'difficulty': 'Hard', 'barrier': 125, 'barrier_type': 'up'},
-    {'id': 'upandoutminput', 'name': 'UpAndOutMinPut', 'description': '3 stocks, upper barrier at 120',
-     'nb_stocks': 3, 'difficulty': 'Hard', 'barrier': 120, 'barrier_type': 'up'},
-    {'id': 'downandoutbest2call', 'name': 'DownAndOutBest2Call', 'description': '7 stocks, lower barrier at 85',
-     'nb_stocks': 7, 'difficulty': 'Hard', 'barrier': 85, 'barrier_type': 'down'},
-    # IMPOSSIBLE
-    {'id': 'doublebarrierlookbackfloatingput', 'name': 'DoubleBarrierLookbackFloatingPut', 'description': '1 stock, barriers at 85 and 115',
-     'nb_stocks': 1, 'difficulty': 'Impossible', 'barrier_up': 115, 'barrier_down': 85, 'barrier_type': 'double'},
-    {'id': 'doublebarrierrankweightedbskcall', 'name': 'DoubleBarrierRankWeightedBskCall', 'description': '3 stocks, barriers at 80 and 125',
-     'nb_stocks': 3, 'difficulty': 'Impossible', 'barrier_up': 125, 'barrier_down': 80, 'barrier_type': 'double'},
-    {'id': 'doublemovingbarrierdispersioncall', 'name': 'DoubleMovingBarrierDispersionCall', 'description': '7 stocks, moving barriers at 85 and 115',
-     'nb_stocks': 7, 'difficulty': 'Impossible', 'barrier_up': 115, 'barrier_down': 85, 'barrier_type': 'double'}
-]
-"""
+# Default game to pre-load at startup for instant first click
+DEFAULT_GAME = 'upandoutcall'  # Smallest model (13MB), Medium difficulty
 
 
 def load_game_metadata():
@@ -383,8 +415,33 @@ def health_check():
     })
 
 
+@app.route('/api/keepalive', methods=['GET'])
+def keepalive():
+    """
+    Keep-alive endpoint to prevent cold starts on free tier hosting.
+
+    Use a cron service (e.g., cron-job.org, UptimeRobot) to ping this endpoint
+    every 14 minutes to keep the service warm.
+
+    Free tier services spin down after 15 minutes of inactivity.
+    """
+    return jsonify({
+        'status': 'alive',
+        'timestamp': int(np.datetime64('now').astype('int64') / 1e9),
+        'cached_game': list(LOADED_MODELS_CACHE.keys())[0] if LOADED_MODELS_CACHE else None
+    })
+
+
 # Load only metadata on startup (models loaded on-demand to save memory)
 load_game_metadata()
+
+# Pre-load default game for instant first click
+try:
+    print(f"\nPre-loading default game '{DEFAULT_GAME}' for instant first click...")
+    load_model_for_game(DEFAULT_GAME)
+    print(f"✓ Default game ready!\n")
+except Exception as e:
+    print(f"✗ Warning: Failed to pre-load default game: {e}\n")
 
 
 if __name__ == '__main__':
