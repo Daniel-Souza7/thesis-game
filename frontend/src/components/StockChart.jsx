@@ -1,7 +1,7 @@
 import React from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 
-const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineExerciseDate, revealedUpToStep, isAnimating }) => {
+const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineExerciseDate, revealedUpToStep, isAnimating, onHold, onExercise, isPlayerTurn }) => {
   // Prepare data for chart (only show up to current step)
   const chartData = []
   for (let i = 0; i <= currentStep; i++) {
@@ -133,6 +133,30 @@ const StockChart = ({ path, currentStep, gameInfo, playerExerciseDate, machineEx
           {stockLines}
         </LineChart>
       </ResponsiveContainer>
+
+      {/* Control buttons under the chart */}
+      <div className="chart-controls">
+        <button
+          className="arcade-button hold"
+          onClick={onHold}
+          disabled={!isPlayerTurn}
+        >
+          HOLD
+        </button>
+        <button
+          className="arcade-button exercise"
+          onClick={onExercise}
+          disabled={!isPlayerTurn}
+        >
+          EXERCISE
+        </button>
+      </div>
+
+      {!isPlayerTurn && (
+        <div style={{ color: '#ffff00', fontSize: '10px', marginTop: '10px', textAlign: 'center' }}>
+          {isAnimating ? 'FAST FORWARD...' : 'WATCH THE PATH...'}
+        </div>
+      )}
     </div>
   )
 }

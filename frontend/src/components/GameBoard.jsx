@@ -268,6 +268,9 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
               machineExerciseDate={machineExerciseDate}
               revealedUpToStep={revealedUpToStep}
               isAnimating={isAnimating}
+              onHold={handleHold}
+              onExercise={handleExercise}
+              isPlayerTurn={isPlayerTurn}
             />
 
             <InfoPanel
@@ -286,10 +289,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
           </div>
 
           <ControlPanel
-            onHold={handleHold}
-            onExercise={handleExercise}
             onSwitchProduct={handleOpenGameSelection}
-            isPlayerTurn={isPlayerTurn}
             isAnimating={isAnimating}
             currentProduct={game_info.name}
           />

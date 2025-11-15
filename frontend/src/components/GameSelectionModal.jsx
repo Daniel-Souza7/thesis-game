@@ -92,7 +92,18 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">SELECT GAME</h2>
-          {currentGame && <button className="modal-close" onClick={onClose}>✕</button>}
+          <div className="modal-header-buttons">
+            <a
+              href="/info.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="info-link-button"
+              title="Go back to info page"
+            >
+              GO BACK TO INFO
+            </a>
+            {currentGame && <button className="modal-close" onClick={onClose}>✕</button>}
+          </div>
         </div>
 
         <div className="game-list">
