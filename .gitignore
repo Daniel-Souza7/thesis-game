@@ -1,7 +1,7 @@
 # Python
 __pycache__/
 *.py[cod]
-*$py.class
+*.class
 *.so
 .Python
 env/
@@ -40,4 +40,5 @@ Thumbs.db
 # Data files (optional - comment out if you want to commit pre-trained models)
 # backend/data/trained_models/*.pkl
 # backend/data/paths/*.npz
+backend/data/
 .vercel
