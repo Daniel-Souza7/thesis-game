@@ -13,7 +13,7 @@ Run this BEFORE starting the API server.
 import numpy as np
 import pickle
 import os
-from backend.models.black_scholes import BlackScholes
+from backend.models.rough_heston import RoughHeston
 from backend.payoffs.game_payoffs import (
     # MEDIUM
     UpAndOutCall,
@@ -31,10 +31,14 @@ from backend.payoffs.game_payoffs import (
 from backend.algorithms.srlsm import SRLSM
 
 
-# Game parameters from thesis
+# Game parameters - Rough Heston model
 PARAMS = {
     'drift': 0.02,
-    'volatility': 0.2,
+    'volatility': 0.29,
+    'mean': 0.07,
+    'speed': 0.5,
+    'correlation': -0.75,
+    'hurst': 0.03,
     'spot': 100,
     'strike': 100,  # K=100 for all games
     'dividend': 0,
@@ -43,7 +47,9 @@ PARAMS = {
     'hidden_size': 20,
     'factors': (1.0, 1.0, 1.0),
     'train_ITM_only': True,
-    'use_payoff_as_input': False
+    'use_payoff_as_input': False,
+    'v0': 0.026,
+    'nb_steps_mult': 10
 }
 
 # Training and test set sizes
@@ -143,16 +149,22 @@ def generate_shared_paths(nb_stocks, train_seed, test_seed):
     print(f"Generating shared paths for {nb_stocks} stock(s)")
     print(f"{'='*60}")
 
-    # Create model for training paths
-    model = BlackScholes(
+    # Create Rough Heston model for training paths
+    model = RoughHeston(
         drift=PARAMS['drift'],
         volatility=PARAMS['volatility'],
+        mean=PARAMS['mean'],
+        speed=PARAMS['speed'],
+        correlation=PARAMS['correlation'],
+        hurst=PARAMS['hurst'],
         spot=PARAMS['spot'],
         nb_stocks=nb_stocks,
         nb_paths=NB_TRAIN_PATHS,
         nb_dates=PARAMS['nb_dates'],
         maturity=PARAMS['maturity'],
-        dividend=PARAMS['dividend']
+        dividend=PARAMS['dividend'],
+        v0=PARAMS['v0'],
+        nb_steps_mult=PARAMS['nb_steps_mult']
     )
 
     # Generate training paths
@@ -181,16 +193,22 @@ def train_game(config, train_paths):
     print(f"Training {config['name']} ({config['difficulty']})")
     print(f"{'='*60}")
 
-    # Create model
-    model = BlackScholes(
+    # Create Rough Heston model
+    model = RoughHeston(
         drift=PARAMS['drift'],
         volatility=PARAMS['volatility'],
+        mean=PARAMS['mean'],
+        speed=PARAMS['speed'],
+        correlation=PARAMS['correlation'],
+        hurst=PARAMS['hurst'],
         spot=PARAMS['spot'],
         nb_stocks=config['nb_stocks'],
         nb_paths=NB_TRAIN_PATHS,
         nb_dates=PARAMS['nb_dates'],
         maturity=PARAMS['maturity'],
-        dividend=PARAMS['dividend']
+        dividend=PARAMS['dividend'],
+        v0=PARAMS['v0'],
+        nb_steps_mult=PARAMS['nb_steps_mult']
     )
 
     # Create payoff
@@ -233,9 +251,10 @@ def train_game(config, train_paths):
 def main():
     """Main training script."""
     print("\n" + "="*60)
-    print("SRLSM Model Training Script - All 9 Games")
+    print("SRLSM Model Training Script - All 9 Games (Rough Heston)")
     print("="*60)
-    print(f"\nParameters:")
+    print(f"\nModel: Rough Heston")
+    print(f"Parameters:")
     for key, value in PARAMS.items():
         print(f"  {key}: {value}")
     print(f"\nTraining paths: {NB_TRAIN_PATHS}")

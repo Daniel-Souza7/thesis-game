@@ -714,14 +714,11 @@ body::after {
 }
 
 .game-item-header {
-  margin-bottom: 10px;
-}
-
-.game-item-footer {
   display: flex;
-  justify-content: center;
-  margin-top: auto;
-  padding-top: 10px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  gap: 10px;
 }
 
 .game-item-title {
@@ -729,6 +726,7 @@ body::after {
   color: #00ffff;
   text-shadow: 0 0 5px #00ffff;
   line-height: 1.4;
+  flex: 1;
 }
 
 .difficulty-badge {
@@ -736,6 +734,8 @@ body::after {
   padding: 5px 10px;
   border-radius: 5px;
   text-shadow: none;
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .difficulty-badge.difficulty-medium {

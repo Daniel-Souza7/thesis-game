@@ -95,16 +95,14 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
                   <div>{game.name_line1}</div>
                   <div>{game.name_line2}</div>
                 </h3>
+                <span className={`difficulty-badge difficulty-${game.difficulty.toLowerCase()}`}>
+                  {game.difficulty}
+                </span>
               </div>
               <p className="game-item-description">{game.description}</p>
               {currentGame === game.id && (
                 <div className="current-game-badge">CURRENT GAME</div>
               )}
-              <div className="game-item-footer">
-                <span className={`difficulty-badge difficulty-${game.difficulty.toLowerCase()}`}>
-                  {game.difficulty}
-                </span>
-              </div>
             </div>
           ))}
         </div>
