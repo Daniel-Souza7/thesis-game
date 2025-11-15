@@ -219,9 +219,22 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
 
   // Determine current game ID based on game name
   const getCurrentGameId = () => {
-    if (game_info.name.includes('Up-and-Out')) return 'upandout'
-    if (game_info.name.includes('Lookback')) return 'dko'
-    return 'upandout'
+    const name = game_info.name
+
+    // Map game names to their IDs
+    const nameToIdMap = {
+      'UpAndOutCall': 'upandoutcall',
+      'DownAndOutMinPut': 'downandoutminput',
+      'DoubleBarrierMaxCall': 'doublebarriermaxcall',
+      'RandomlyMovingBarrierCall': 'randomlymovingbarriercall',
+      'UpAndOutMinPut': 'upandoutminput',
+      'DownAndOutBest2Call': 'downandoutbest2call',
+      'DoubleBarrierLookbackFloatingPut': 'doublebarrierlookbackfloatingput',
+      'DoubleBarrierRankWeightedBskCall': 'doublebarrierrankweightedbskcall',
+      'DoubleMovingBarrierDispersionCall': 'doublemovingbarrierdispersioncall'
+    }
+
+    return nameToIdMap[name] || 'upandoutcall'
   }
 
   const handleOpenGameSelection = () => {
