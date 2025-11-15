@@ -2,6 +2,11 @@
 
 These payoffs combine multiple concepts like barriers, lookbacks, and custom basket calculations.
 Difficulty levels: MEDIUM, HARD, IMPOSSIBLE
+
+Key principles:
+- All payoffs evaluate at time t (not T) - American-style early exercise
+- Barrier checks use min/max across ALL stocks AND ALL time up to t
+- For moving barriers, check S(τ) vs B(τ) at each specific time τ
 """
 
 import numpy as np
@@ -15,8 +20,8 @@ from backend.payoffs.barrier_options import Payoff
 class UpAndOutCall(Payoff):
     """Up-and-out call option for a single stock.
 
-    Knocks out (becomes worthless) if the stock price goes above the barrier.
-    Otherwise pays max(S(T) - K, 0).
+    Barrier: max_{τ≤t} S(τ) < B_U
+    Payoff: max(S(t) - K, 0) if barrier not hit, else 0
 
     Difficulty: MEDIUM
     Stocks: 1
@@ -28,18 +33,18 @@ class UpAndOutCall(Payoff):
         self.barrier = barrier
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, 1, nb_dates+1) - single stock price paths
+            X: shape (nb_paths, 1, t+1) - price path up to time t
         """
-        # Check if maximum price along path exceeds barrier
-        max_price = np.max(X[:, 0, :], axis=1)
-        knocked_out = max_price >= self.barrier
+        # Check if maximum price up to time t exceeds barrier
+        max_price_up_to_t = np.max(X[:, 0, :], axis=1)
+        knocked_out = max_price_up_to_t >= self.barrier
 
-        # Terminal payoff
-        terminal_price = X[:, 0, -1]
-        payoff = np.maximum(0, terminal_price - self.strike)
+        # Payoff at time t
+        price_at_t = X[:, 0, -1]
+        payoff = np.maximum(0, price_at_t - self.strike)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
@@ -50,8 +55,9 @@ class UpAndOutCall(Payoff):
 class DownAndOutBasketPut(Payoff):
     """Down-and-out put on arithmetic basket.
 
-    Knocks out if the basket average goes below the barrier.
-    Otherwise pays max(K - basket_avg(T), 0).
+    Barrier: min_{τ≤t,i} S_i(τ) > B_L
+    Basket: avg_i S_i(t)
+    Payoff: max(K - avg_i S_i(t), 0) if barrier not hit, else 0
 
     Difficulty: MEDIUM
     Stocks: Multiple
@@ -63,21 +69,18 @@ class DownAndOutBasketPut(Payoff):
         self.barrier = barrier
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, nb_stocks, nb_dates+1)
+            X: shape (nb_paths, nb_stocks, t+1)
         """
-        # Calculate basket average at each time step
-        basket_prices = np.mean(X, axis=1)  # (nb_paths, nb_dates+1)
+        # Check if minimum price across all stocks and time goes below barrier
+        min_price_overall = np.min(X, axis=(1, 2))  # min over stocks and time
+        knocked_out = min_price_overall <= self.barrier
 
-        # Check if minimum basket price goes below barrier
-        min_basket = np.min(basket_prices, axis=1)
-        knocked_out = min_basket <= self.barrier
-
-        # Terminal payoff
-        terminal_basket = basket_prices[:, -1]
-        payoff = np.maximum(0, self.strike - terminal_basket)
+        # Basket average at time t
+        basket_at_t = np.mean(X[:, :, -1], axis=1)
+        payoff = np.maximum(0, self.strike - basket_at_t)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
@@ -86,10 +89,10 @@ class DownAndOutBasketPut(Payoff):
 
 
 class DoubleBarrierMaxCall(Payoff):
-    """Double barrier max call option.
+    """Double barrier call on maximum of stocks.
 
-    Knocks out if the maximum of all stocks goes above barrier_up or below barrier_down.
-    Otherwise pays max(max_i(S_i(T)) - K, 0).
+    Barrier: min_{τ≤t,i} S_i(τ) > B_L AND max_{τ≤t,i} S_i(τ) < B_U
+    Payoff: max(max_i S_i(t) - K, 0) if barriers not hit, else 0
 
     Difficulty: MEDIUM
     Stocks: Multiple
@@ -102,23 +105,20 @@ class DoubleBarrierMaxCall(Payoff):
         self.barrier_down = barrier_down
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, nb_stocks, nb_dates+1)
+            X: shape (nb_paths, nb_stocks, t+1)
         """
-        # For each path, find the maximum stock price at each time step
-        max_across_stocks = np.max(X, axis=1)  # (nb_paths, nb_dates+1)
-
-        # Check barriers
-        max_overall = np.max(max_across_stocks, axis=1)
-        min_overall = np.min(max_across_stocks, axis=1)
+        # Check barriers across all stocks and time
+        max_overall = np.max(X, axis=(1, 2))  # max over stocks and time
+        min_overall = np.min(X, axis=(1, 2))  # min over stocks and time
 
         knocked_out = (max_overall >= self.barrier_up) | (min_overall <= self.barrier_down)
 
-        # Terminal payoff: max of all stocks
-        terminal_max = max_across_stocks[:, -1]
-        payoff = np.maximum(0, terminal_max - self.strike)
+        # Payoff: max of all stocks at time t
+        max_at_t = np.max(X[:, :, -1], axis=1)
+        payoff = np.maximum(0, max_at_t - self.strike)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
@@ -133,9 +133,9 @@ class DoubleBarrierMaxCall(Payoff):
 class StepBarrierCall(Payoff):
     """Call option with stochastic step barrier (upper only).
 
-    The upper barrier starts at initial_barrier and at each time step,
-    a random value from uniform(-2, 1) is added to create a random walk barrier.
-    The option knocks out if price exceeds the time-varying barrier.
+    Moving Barrier: B_U(τ+1) = B_U(τ) + uniform(-2, 1)
+    Barrier: For all τ≤t, check if S(τ) < B_U(τ)
+    Payoff: max(S(t) - K, 0) if never hit barrier, else 0
 
     Difficulty: HARD
     Stocks: 1
@@ -148,32 +148,33 @@ class StepBarrierCall(Payoff):
         self.seed = seed
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, 1, nb_dates+1)
+            X: shape (nb_paths, 1, t+1)
         """
-        nb_paths, nb_stocks, nb_dates_plus_1 = X.shape
-        nb_dates = nb_dates_plus_1 - 1
+        nb_paths, nb_stocks, t_plus_1 = X.shape
+        t = t_plus_1 - 1
 
-        # Generate stochastic barrier path (same for all paths)
+        # Generate barrier path up to time t (deterministic based on seed)
         rng = np.random.RandomState(self.seed)
-        barrier_steps = rng.uniform(-2, 1, size=nb_dates)
-        barrier_path = np.zeros(nb_dates_plus_1)
+        barrier_steps = rng.uniform(-2, 1, size=t)
+        barrier_path = np.zeros(t_plus_1)
         barrier_path[0] = self.initial_barrier
 
-        for t in range(1, nb_dates_plus_1):
-            barrier_path[t] = barrier_path[t-1] + barrier_steps[t-1]
+        for tau in range(1, t_plus_1):
+            barrier_path[tau] = barrier_path[tau-1] + barrier_steps[tau-1]
 
         # Get stock prices
-        prices = X[:, 0, :]  # (nb_paths, nb_dates+1)
+        prices = X[:, 0, :]  # (nb_paths, t+1)
 
         # Check if price ever exceeds the time-varying barrier
+        # At each time τ, check if S(τ) >= B(τ)
         knocked_out = np.any(prices >= barrier_path[np.newaxis, :], axis=1)
 
-        # Terminal payoff
-        terminal_price = prices[:, -1]
-        payoff = np.maximum(0, terminal_price - self.strike)
+        # Payoff at time t
+        price_at_t = prices[:, -1]
+        payoff = np.maximum(0, price_at_t - self.strike)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
@@ -184,8 +185,8 @@ class StepBarrierCall(Payoff):
 class GameUpAndOutMinPut(Payoff):
     """Up-and-out put on minimum of stocks.
 
-    Knocks out if the minimum of all stocks goes above the barrier.
-    Otherwise pays max(K - min_i(S_i(T)), 0).
+    Barrier: max_{τ≤t,i} S_i(τ) < B_U
+    Payoff: max(K - min_i S_i(t), 0) if barrier not hit, else 0
 
     Difficulty: HARD
     Stocks: Multiple
@@ -197,21 +198,18 @@ class GameUpAndOutMinPut(Payoff):
         self.barrier = barrier
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, nb_stocks, nb_dates+1)
+            X: shape (nb_paths, nb_stocks, t+1)
         """
-        # For each path, find the minimum stock price at each time step
-        min_across_stocks = np.min(X, axis=1)  # (nb_paths, nb_dates+1)
+        # Check if maximum across all stocks and time goes above barrier
+        max_overall = np.max(X, axis=(1, 2))  # max over stocks and time
+        knocked_out = max_overall >= self.barrier
 
-        # Check if minimum ever goes above barrier (knocks out)
-        max_of_mins = np.max(min_across_stocks, axis=1)
-        knocked_out = max_of_mins >= self.barrier
-
-        # Terminal payoff: put on minimum
-        terminal_min = min_across_stocks[:, -1]
-        payoff = np.maximum(0, self.strike - terminal_min)
+        # Payoff: put on minimum at time t
+        min_at_t = np.min(X[:, :, -1], axis=1)
+        payoff = np.maximum(0, self.strike - min_at_t)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
@@ -222,8 +220,9 @@ class GameUpAndOutMinPut(Payoff):
 class DownAndOutBestOfKCall(Payoff):
     """Down-and-out call on the average of the top K stocks.
 
-    Knocks out if the basket average goes below the barrier.
-    Otherwise pays max(avg(top_K_stocks(T)) - K, 0).
+    Barrier: min_{τ≤t,i} S_i(τ) > B_L
+    Best-of-K: avg(top K stocks at time t)
+    Payoff: max(avg(top K at t) - K, 0) if barrier not hit, else 0
 
     Difficulty: HARD
     Stocks: Multiple (at least k stocks)
@@ -236,21 +235,18 @@ class DownAndOutBestOfKCall(Payoff):
         self.k = k
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, nb_stocks, nb_dates+1)
+            X: shape (nb_paths, nb_stocks, t+1)
         """
-        # Calculate basket average at each time step for barrier check
-        basket_prices = np.mean(X, axis=1)  # (nb_paths, nb_dates+1)
+        # Check if minimum across all stocks and time goes below barrier
+        min_overall = np.min(X, axis=(1, 2))  # min over stocks and time
+        knocked_out = min_overall <= self.barrier
 
-        # Check if basket goes below barrier
-        min_basket = np.min(basket_prices, axis=1)
-        knocked_out = min_basket <= self.barrier
-
-        # Terminal payoff: average of top k stocks
-        terminal_prices = X[:, :, -1]  # (nb_paths, nb_stocks)
-        sorted_prices = np.sort(terminal_prices, axis=1)[:, ::-1]  # Sort descending
+        # Payoff: average of top k stocks at time t
+        prices_at_t = X[:, :, -1]  # (nb_paths, nb_stocks)
+        sorted_prices = np.sort(prices_at_t, axis=1)[:, ::-1]  # Sort descending
         top_k_avg = np.mean(sorted_prices[:, :self.k], axis=1)
 
         payoff = np.maximum(0, top_k_avg - self.strike)
@@ -268,8 +264,9 @@ class DownAndOutBestOfKCall(Payoff):
 class DoubleBarrierLookbackFloatingPut(Payoff):
     """Double barrier lookback floating strike put.
 
-    Knocks out if price goes above barrier_up or below barrier_down.
-    Otherwise pays max(max(S(0:T)) - S(T), 0) (floating strike lookback put).
+    Barrier: min_{τ≤t} S(τ) > B_L AND max_{τ≤t} S(τ) < B_U
+    Lookback: max_{τ≤t} S(τ) - S(t)
+    Payoff: max(max_{τ≤t} S(τ) - S(t), 0) if barriers not hit, else 0
 
     Difficulty: IMPOSSIBLE
     Stocks: 1
@@ -282,22 +279,22 @@ class DoubleBarrierLookbackFloatingPut(Payoff):
         self.barrier_down = barrier_down
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, 1, nb_dates+1)
+            X: shape (nb_paths, 1, t+1)
         """
-        prices = X[:, 0, :]  # (nb_paths, nb_dates+1)
+        prices = X[:, 0, :]  # (nb_paths, t+1)
 
         # Check double barrier
         max_price = np.max(prices, axis=1)
         min_price = np.min(prices, axis=1)
         knocked_out = (max_price >= self.barrier_up) | (min_price <= self.barrier_down)
 
-        # Lookback floating put payoff
-        max_along_path = np.max(prices, axis=1)
-        terminal_price = prices[:, -1]
-        payoff = np.maximum(0, max_along_path - terminal_price)
+        # Lookback floating put payoff at time t
+        max_up_to_t = np.max(prices, axis=1)
+        price_at_t = prices[:, -1]
+        payoff = np.maximum(0, max_up_to_t - price_at_t)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
@@ -308,13 +305,9 @@ class DoubleBarrierLookbackFloatingPut(Payoff):
 class DoubleBarrierRankWeightedBasketCall(Payoff):
     """Double barrier call on rank-weighted basket of exactly 3 stocks.
 
-    At each time step, stocks are ranked by price:
-    - 1st (highest): 15% weight
-    - 2nd (middle): 50% weight
-    - 3rd (lowest): 35% weight
-
-    The weighted basket knocks out if it goes above barrier_up or below barrier_down.
-    Otherwise pays max(weighted_basket(T) - K, 0).
+    Barrier: min_{τ≤t,i} S_i(τ) > B_L AND max_{τ≤t,i} S_i(τ) < B_U
+    Weighted Basket: Rank stocks at time t, apply weights [15%, 50%, 35%] for [1st, 2nd, 3rd]
+    Payoff: max(weighted_basket(t) - K, 0) if barriers not hit, else 0
 
     Difficulty: IMPOSSIBLE
     Stocks: Exactly 3
@@ -329,34 +322,29 @@ class DoubleBarrierRankWeightedBasketCall(Payoff):
         self.weights = np.array([0.15, 0.50, 0.35])
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, 3, nb_dates+1) - exactly 3 stocks required
+            X: shape (nb_paths, 3, t+1) - exactly 3 stocks required
         """
-        nb_paths, nb_stocks, nb_dates_plus_1 = X.shape
+        nb_paths, nb_stocks, t_plus_1 = X.shape
         assert nb_stocks == 3, "DoubleBarrierRankWeightedBasketCall requires exactly 3 stocks"
 
-        # Calculate rank-weighted basket at each time step
-        weighted_basket = np.zeros((nb_paths, nb_dates_plus_1))
+        # Check double barrier across all stocks and time
+        max_overall = np.max(X, axis=(1, 2))
+        min_overall = np.min(X, axis=(1, 2))
+        knocked_out = (max_overall >= self.barrier_up) | (min_overall <= self.barrier_down)
 
-        for t in range(nb_dates_plus_1):
-            prices_t = X[:, :, t]  # (nb_paths, 3)
+        # Calculate rank-weighted basket at time t
+        prices_at_t = X[:, :, -1]  # (nb_paths, 3)
 
-            # Sort prices in descending order (rank 1 = highest)
-            sorted_prices = np.sort(prices_t, axis=1)[:, ::-1]  # (nb_paths, 3)
+        # Sort prices in descending order (rank 1 = highest)
+        sorted_prices = np.sort(prices_at_t, axis=1)[:, ::-1]  # (nb_paths, 3)
 
-            # Apply weights: 1st=15%, 2nd=50%, 3rd=35%
-            weighted_basket[:, t] = np.sum(sorted_prices * self.weights[np.newaxis, :], axis=1)
+        # Apply weights: 1st=15%, 2nd=50%, 3rd=35%
+        weighted_basket = np.sum(sorted_prices * self.weights[np.newaxis, :], axis=1)
 
-        # Check double barrier
-        max_basket = np.max(weighted_basket, axis=1)
-        min_basket = np.min(weighted_basket, axis=1)
-        knocked_out = (max_basket >= self.barrier_up) | (min_basket <= self.barrier_down)
-
-        # Terminal payoff
-        terminal_basket = weighted_basket[:, -1]
-        payoff = np.maximum(0, terminal_basket - self.strike)
+        payoff = np.maximum(0, weighted_basket - self.strike)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
@@ -367,14 +355,12 @@ class DoubleBarrierRankWeightedBasketCall(Payoff):
 class DoubleStepBarrierDispersionCall(Payoff):
     """Dispersion call with double stochastic step barriers.
 
-    Barriers:
-    - Lower barrier: starts at barrier_down, each step adds uniform(-1, 2)
-    - Upper barrier: starts at barrier_up, each step adds uniform(-2, 1)
-
-    Payoff: max(0, Σ|S_i(T) - S̄(T)| - K)
-    where S̄(T) is the basket average at maturity.
-
-    Knocks out if the basket average breaches either time-varying barrier.
+    Moving Barriers:
+      B_L(τ+1) = B_L(τ) + uniform(-1, 2)
+      B_U(τ+1) = B_U(τ) + uniform(-2, 1)
+    Barrier: For all τ≤t, check if avg_i S_i(τ) > B_L(τ) AND avg_i S_i(τ) < B_U(τ)
+    Dispersion: Σ_i |S_i(t) - avg_i S_i(t)|
+    Payoff: max(dispersion(t) - K, 0) if never hit barriers, else 0
 
     Difficulty: IMPOSSIBLE
     Stocks: Multiple
@@ -388,47 +374,48 @@ class DoubleStepBarrierDispersionCall(Payoff):
         self.seed = seed
 
     def eval(self, X):
-        """Evaluate payoff.
+        """Evaluate payoff at time t.
 
         Args:
-            X: shape (nb_paths, nb_stocks, nb_dates+1)
+            X: shape (nb_paths, nb_stocks, t+1)
         """
-        nb_paths, nb_stocks, nb_dates_plus_1 = X.shape
-        nb_dates = nb_dates_plus_1 - 1
+        nb_paths, nb_stocks, t_plus_1 = X.shape
+        t = t_plus_1 - 1
 
-        # Generate stochastic barrier paths
+        # Generate stochastic barrier paths up to time t
         rng = np.random.RandomState(self.seed)
 
         # Lower barrier: adds uniform(-1, 2) at each step
-        lower_steps = rng.uniform(-1, 2, size=nb_dates)
-        lower_barrier_path = np.zeros(nb_dates_plus_1)
+        lower_steps = rng.uniform(-1, 2, size=t)
+        lower_barrier_path = np.zeros(t_plus_1)
         lower_barrier_path[0] = self.barrier_down
 
-        for t in range(1, nb_dates_plus_1):
-            lower_barrier_path[t] = lower_barrier_path[t-1] + lower_steps[t-1]
+        for tau in range(1, t_plus_1):
+            lower_barrier_path[tau] = lower_barrier_path[tau-1] + lower_steps[tau-1]
 
         # Upper barrier: adds uniform(-2, 1) at each step
-        upper_steps = rng.uniform(-2, 1, size=nb_dates)
-        upper_barrier_path = np.zeros(nb_dates_plus_1)
+        upper_steps = rng.uniform(-2, 1, size=t)
+        upper_barrier_path = np.zeros(t_plus_1)
         upper_barrier_path[0] = self.barrier_up
 
-        for t in range(1, nb_dates_plus_1):
-            upper_barrier_path[t] = upper_barrier_path[t-1] + upper_steps[t-1]
+        for tau in range(1, t_plus_1):
+            upper_barrier_path[tau] = upper_barrier_path[tau-1] + upper_steps[tau-1]
 
         # Calculate basket average at each time step
-        basket_prices = np.mean(X, axis=1)  # (nb_paths, nb_dates+1)
+        basket_prices = np.mean(X, axis=1)  # (nb_paths, t+1)
 
-        # Check if basket breaches either barrier
+        # Check if basket breaches either barrier at any time τ
+        # At each τ, check if basket(τ) <= B_L(τ) or basket(τ) >= B_U(τ)
         breaches_upper = np.any(basket_prices >= upper_barrier_path[np.newaxis, :], axis=1)
         breaches_lower = np.any(basket_prices <= lower_barrier_path[np.newaxis, :], axis=1)
         knocked_out = breaches_upper | breaches_lower
 
-        # Dispersion payoff at maturity: Σ|S_i(T) - S̄(T)|
-        terminal_prices = X[:, :, -1]  # (nb_paths, nb_stocks)
-        terminal_basket = basket_prices[:, -1]  # (nb_paths,)
+        # Dispersion payoff at time t: Σ|S_i(t) - avg(S_i(t))|
+        prices_at_t = X[:, :, -1]  # (nb_paths, nb_stocks)
+        basket_at_t = basket_prices[:, -1]  # (nb_paths,)
 
         # Calculate dispersion: sum of absolute deviations from mean
-        deviations = np.abs(terminal_prices - terminal_basket[:, np.newaxis])
+        deviations = np.abs(prices_at_t - basket_at_t[:, np.newaxis])
         total_dispersion = np.sum(deviations, axis=1)
 
         payoff = np.maximum(0, total_dispersion - self.strike)
