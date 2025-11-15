@@ -20,20 +20,81 @@ const InfoPanel = ({
   const getPayoffFormula = () => {
     const name = gameInfo.name
 
-    if (name.includes('Up-and-Out Min Put')) {
+    // MEDIUM
+    if (name === 'UpAndOutCall') {
       return (
         <span>
-          Payoff: K - min<sub>i</sub> S<sub>i</sub>(t)
+          (S(t) - K)<sup>+</sup>
           <br />
-          <span style={{ fontSize: '7px' }}>If max<sub>i</sub> S<sub>i</sub>(t) {'<'} {gameInfo.barrier}</span>
+          <span style={{ fontSize: '7px' }}>If max<sub>τ≤t</sub> S(τ) {'<'} {gameInfo.barrier}</span>
         </span>
       )
-    } else if (name.includes('Lookback')) {
+    } else if (name === 'DownAndOutMinPut') {
       return (
         <span>
-          Payoff: max<sub>τ≤t,i</sub> S<sub>i</sub>(τ) - min<sub>i</sub> S<sub>i</sub>(t)
+          (K - min<sub>i</sub> S<sub>i</sub>(t))<sup>+</sup>
           <br />
-          <span style={{ fontSize: '7px' }}>If {gameInfo.barrier_down} {'<'} S(t) {'<'} {gameInfo.barrier_up}</span>
+          <span style={{ fontSize: '7px' }}>If min<sub>τ≤t,i</sub> S<sub>i</sub>(τ) {'>'} {gameInfo.barrier}</span>
+        </span>
+      )
+    } else if (name === 'DoubleBarrierMaxCall') {
+      return (
+        <span>
+          (max<sub>i</sub> S<sub>i</sub>(t) - K)<sup>+</sup>
+          <br />
+          <span style={{ fontSize: '7px' }}>If {gameInfo.barrier_down} {'<'} S<sub>i</sub> {'<'} {gameInfo.barrier_up}</span>
+        </span>
+      )
+    }
+    // HARD
+    else if (name === 'RandomlyMovingBarrierCall' || name.includes('StepBarrier')) {
+      return (
+        <span>
+          (S(t) - K)<sup>+</sup>
+          <br />
+          <span style={{ fontSize: '7px' }}>If S(τ) {'<'} B(τ) ∀τ≤t</span>
+        </span>
+      )
+    } else if (name === 'UpAndOutMinPut') {
+      return (
+        <span>
+          (K - min<sub>i</sub> S<sub>i</sub>(t))<sup>+</sup>
+          <br />
+          <span style={{ fontSize: '7px' }}>If max<sub>τ≤t,i</sub> S<sub>i</sub>(τ) {'<'} {gameInfo.barrier}</span>
+        </span>
+      )
+    } else if (name === 'DownAndOutBest2Call') {
+      return (
+        <span>
+          (avg(top 2 stocks) - K)<sup>+</sup>
+          <br />
+          <span style={{ fontSize: '7px' }}>If min<sub>τ≤t,i</sub> S<sub>i</sub>(τ) {'>'} {gameInfo.barrier}</span>
+        </span>
+      )
+    }
+    // IMPOSSIBLE
+    else if (name.includes('Lookback')) {
+      return (
+        <span>
+          (max<sub>τ≤t</sub> S(τ) - S(t))<sup>+</sup>
+          <br />
+          <span style={{ fontSize: '7px' }}>If {gameInfo.barrier_down} {'<'} S(τ) {'<'} {gameInfo.barrier_up}</span>
+        </span>
+      )
+    } else if (name.includes('RankWeighted')) {
+      return (
+        <span>
+          (0.15×S<sub>1st</sub> + 0.50×S<sub>2nd</sub> + 0.35×S<sub>3rd</sub> - K)<sup>+</sup>
+          <br />
+          <span style={{ fontSize: '7px' }}>If {gameInfo.barrier_down} {'<'} S<sub>i</sub> {'<'} {gameInfo.barrier_up}</span>
+        </span>
+      )
+    } else if (name.includes('Dispersion')) {
+      return (
+        <span>
+          (Σ<sub>i</sub> |S<sub>i</sub>(t) - avg(S)|)<sup>+</sup>
+          <br />
+          <span style={{ fontSize: '7px' }}>If B<sub>L</sub>(τ) {'<'} avg(S(τ)) {'<'} B<sub>U</sub>(τ) ∀τ</span>
         </span>
       )
     }
@@ -45,6 +106,8 @@ const InfoPanel = ({
   const getBarrierText = () => {
     if (gameInfo.barrier_type === 'up') {
       return `Upper Barrier: ${gameInfo.barrier}`
+    } else if (gameInfo.barrier_type === 'down') {
+      return `Lower Barrier: ${gameInfo.barrier}`
     } else if (gameInfo.barrier_type === 'double') {
       return `Barriers: ${gameInfo.barrier_down} / ${gameInfo.barrier_up}`
     }

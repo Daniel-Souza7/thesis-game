@@ -359,7 +359,7 @@ class DoubleStepBarrierDispersionCall(Payoff):
       B_U(τ+1) = B_U(τ) + uniform(-2, 1)
     Barrier: For all τ≤t, check if avg_i S_i(τ) > B_L(τ) AND avg_i S_i(τ) < B_U(τ)
     Dispersion: Σ_i |S_i(t) - avg_i S_i(t)|
-    Payoff: max(dispersion(t) - K, 0) if never hit barriers, else 0
+    Payoff: max(dispersion(t), 0) if never hit barriers, else 0
 
     Difficulty: IMPOSSIBLE
     Stocks: Multiple
@@ -417,7 +417,7 @@ class DoubleStepBarrierDispersionCall(Payoff):
         deviations = np.abs(prices_at_t - basket_at_t[:, np.newaxis])
         total_dispersion = np.sum(deviations, axis=1)
 
-        payoff = np.maximum(0, total_dispersion - self.strike)
+        payoff = np.maximum(0, total_dispersion)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
