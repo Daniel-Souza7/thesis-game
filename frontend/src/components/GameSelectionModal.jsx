@@ -1,6 +1,9 @@
 import React from 'react'
 
 const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
+  // Default to first game (upandoutcall) if no game is currently selected
+  const activeGame = currentGame || 'upandoutcall'
+
   const games = [
     // MEDIUM
     {
@@ -96,7 +99,7 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
           {games.map((game) => (
             <div
               key={game.id}
-              className={`game-item ${currentGame === game.id ? 'active' : ''}`}
+              className={`game-item ${activeGame === game.id ? 'active' : ''}`}
               onClick={() => handleSelect(game.id)}
             >
               <div className="game-item-header">
@@ -113,7 +116,7 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
                 <br />
                 <span className="desc-barrier-info">{game.desc_line2}</span>
               </p>
-              {currentGame === game.id && (
+              {activeGame === game.id && (
                 <div className="current-game-badge">CURRENT GAME</div>
               )}
             </div>
