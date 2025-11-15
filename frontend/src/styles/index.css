@@ -424,6 +424,12 @@ body::after {
   box-shadow: inset 0 0 30px rgba(255, 255, 0, 0.2);
 }
 
+/* Make all buttons in results screen the same size */
+.results-screen .button-group .arcade-button {
+  font-size: 12px;
+  padding: 15px 30px;
+}
+
 .results-title {
   font-size: 20px;
   margin-bottom: 30px;
