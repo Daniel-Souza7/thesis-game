@@ -357,10 +357,11 @@ def health_check():
     })
 
 
-if __name__ == '__main__':
-    # Load data on startup
-    load_game_data()
+# Load data on startup (must be at module level for gunicorn)
+load_game_data()
 
+
+if __name__ == '__main__':
     # Start server
     print("\nStarting API server on http://localhost:5000")
     print("Endpoints:")
