@@ -9,7 +9,9 @@ const InfoPanel = ({
   isBarrierHit,
   machineDecision,
   machineCurrentPayoff,
-  machineDecisionFlash
+  machineDecisionFlash,
+  barrierPathUpper,
+  barrierPathLower
 }) => {
   // Calculate current prices
   const currentPrices = path.map(stock => stock[currentStep])
@@ -102,9 +104,21 @@ const InfoPanel = ({
     return 'Payoff: ...'
   }
 
-  // Get barrier display text
+  // Get barrier display text (with moving barrier support)
   const getBarrierText = () => {
-    if (gameInfo.barrier_type === 'up') {
+    // For moving barriers, use the current barrier values
+    if (barrierPathUpper && !barrierPathLower) {
+      // Single upper moving barrier (RandomlyMovingBarrierCall)
+      const currentBarrier = barrierPathUpper[currentStep]
+      return `Upper Barrier: ${currentBarrier.toFixed(2)}`
+    } else if (barrierPathUpper && barrierPathLower) {
+      // Double moving barriers (DoubleMovingBarrierDispersionCall)
+      const currentBarrierLower = barrierPathLower[currentStep]
+      const currentBarrierUpper = barrierPathUpper[currentStep]
+      return `Barriers: ${currentBarrierLower.toFixed(2)} / ${currentBarrierUpper.toFixed(2)}`
+    }
+    // Static barriers
+    else if (gameInfo.barrier_type === 'up') {
       return `Upper Barrier: ${gameInfo.barrier}`
     } else if (gameInfo.barrier_type === 'down') {
       return `Lower Barrier: ${gameInfo.barrier}`

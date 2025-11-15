@@ -86,7 +86,7 @@
 
       h1 {
         font-size: 32px;
-        margin-bottom: 30px;
+        margin-bottom: 10px;
         text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00;
         animation: glow 2s ease-in-out infinite alternate;
       }
@@ -100,37 +100,178 @@
         }
       }
 
-      .back-button {
-        margin-top: 30px;
+      .subtitle {
+        font-size: 10px;
+        color: #00ffff;
+        margin-bottom: 30px;
+        text-shadow: 0 0 5px #00ffff;
+        line-height: 1.6;
+      }
+
+      .tab-content {
+        display: none;
+        text-align: left;
+        font-size: 10px;
+        line-height: 1.8;
+        color: #ffff00;
+        margin-bottom: 30px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .tab-content h2 {
+        font-size: 14px;
+        color: #ff00ff;
+        margin-bottom: 15px;
+        text-shadow: 0 0 10px #ff00ff;
+      }
+
+      .tab-content h3 {
+        font-size: 11px;
+        color: #00ffff;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      .tab-content ul {
+        margin-left: 20px;
+        margin-bottom: 15px;
+      }
+
+      .tab-content li {
+        margin-bottom: 8px;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+      }
+
+      .back-button, .next-button {
         padding: 15px 30px;
-        background: #00ffff;
-        border: 4px solid #00ffff;
+        border: 4px solid;
         border-radius: 10px;
-        color: #000;
         font-family: 'Press Start 2P', cursive;
         font-size: 12px;
         cursor: pointer;
         text-decoration: none;
         display: inline-block;
         transition: all 0.3s;
-        box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+      }
+
+      .back-button {
+        background: #ff0000;
+        border-color: #ff0000;
+        color: #fff;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
       }
 
       .back-button:hover {
+        background: #cc0000;
+        box-shadow: 0 0 30px rgba(255, 0, 0, 1);
+        transform: scale(1.05);
+      }
+
+      .next-button {
+        background: #00ffff;
+        border-color: #00ffff;
+        color: #000;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+      }
+
+      .next-button:hover {
         background: #00aaff;
         box-shadow: 0 0 30px rgba(0, 255, 255, 1);
         transform: scale(1.05);
       }
 
-      .back-button:active {
+      .next-button:active, .back-button:active {
         transform: scale(0.95);
+      }
+
+      .next-button.hidden {
+        display: none;
       }
     </style>
   </head>
   <body>
     <div class="info-container">
       <h1>Hi, I'm Daniel</h1>
-      <button onclick="window.close()" class="back-button">CLOSE TAB</button>
+      <p class="subtitle">a quantitative finance student<br/>who does not hate maths and code</p>
+
+      <!-- Tab 1: Welcome -->
+      <div id="tab1" class="tab-content active">
+        <h2>Welcome to the Optimal Stopping Game!</h2>
+        <p style="margin-bottom: 15px;">
+          This interactive game is part of my Master's thesis on optimal stopping problems
+          in quantitative finance. You'll compete against a pre-trained SRLSM (Special Randomized
+          Least Squares Monte Carlo) algorithm to maximize payoffs on exotic barrier options.
+        </p>
+        <p>
+          Click NEXT to learn how to play!
+        </p>
+      </div>
+
+      <!-- Tab 2: How to Play -->
+      <div id="tab2" class="tab-content">
+        <h2>How to Play</h2>
+
+        <h3>Objective:</h3>
+        <p>Decide when to exercise your option to maximize your payoff. You compete against a trained AI algorithm.</p>
+
+        <h3>Game Flow:</h3>
+        <ul>
+          <li><strong>Step Forward:</strong> Observe stock prices evolving over time</li>
+          <li><strong>Hold:</strong> Wait and see the next price movement</li>
+          <li><strong>Exercise:</strong> Lock in your current payoff and end your game</li>
+        </ul>
+
+        <h3>Important Notes:</h3>
+        <ul>
+          <li><strong>Barriers:</strong> If a barrier is hit, your payoff becomes $0</li>
+          <li><strong>Machine Decision:</strong> The AI's exercise decision is revealed after yours</li>
+          <li><strong>Payoff Formula:</strong> Each game has a unique payoff structure shown in the info panel</li>
+        </ul>
+
+        <h3>Difficulty Levels:</h3>
+        <ul>
+          <li><strong>Medium:</strong> Simple barrier options (1-7 stocks)</li>
+          <li><strong>Hard:</strong> Moving barriers and complex payoffs</li>
+          <li><strong>Impossible:</strong> Exotic options with multiple features</li>
+        </ul>
+      </div>
+
+      <!-- Buttons -->
+      <div class="button-group">
+        <button onclick="window.close()" class="back-button">CLOSE TAB</button>
+        <button id="nextButton" onclick="nextTab()" class="next-button">NEXT</button>
+      </div>
     </div>
+
+    <script>
+      let currentTab = 1;
+      const totalTabs = 2;
+
+      function nextTab() {
+        // Hide current tab
+        document.getElementById('tab' + currentTab).classList.remove('active');
+
+        // Move to next tab
+        currentTab++;
+
+        // Show next tab
+        document.getElementById('tab' + currentTab).classList.add('active');
+
+        // Hide NEXT button on last tab
+        if (currentTab === totalTabs) {
+          document.getElementById('nextButton').classList.add('hidden');
+        }
+      }
+    </script>
   </body>
 </html>

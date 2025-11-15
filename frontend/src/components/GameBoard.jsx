@@ -20,7 +20,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
 
   const animationRef = useRef(null)
 
-  const { path, payoffs_timeline, game_info, machine_decisions } = gameData
+  const { path, payoffs_timeline, game_info, machine_decisions, barrier_path_upper, barrier_path_lower } = gameData
   const nb_dates = game_info.nb_dates
 
   // Check if barrier is hit at current step
@@ -267,6 +267,8 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
               machineDecision={getMachineDecisionText()}
               machineCurrentPayoff={getMachineCurrentPayoff()}
               machineDecisionFlash={machineDecisionFlash}
+              barrierPathUpper={barrier_path_upper}
+              barrierPathLower={barrier_path_lower}
             />
           </div>
 

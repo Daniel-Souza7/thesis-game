@@ -257,6 +257,36 @@ def start_game():
         # Machine exercises if this is the exercise date
         machine_decisions.append(t == machine_exercise_date)
 
+    # Generate barrier paths for moving barrier games
+    barrier_path = None
+    barrier_path_upper = None
+    barrier_path_lower = None
+
+    if product == 'randomlymovingbarriercall':
+        # StepBarrierCall: single upper barrier
+        import numpy as np
+        rng = np.random.RandomState(42)
+        barrier_steps = rng.uniform(-2, 1, size=nb_dates)
+        barrier_path_upper = [125]  # Initial barrier
+        for step in barrier_steps:
+            barrier_path_upper.append(barrier_path_upper[-1] + step)
+    elif product == 'doublemovingbarrierdispersioncall':
+        # DoubleStepBarrierDispersionCall: double moving barriers
+        import numpy as np
+        rng = np.random.RandomState(42)
+
+        # Lower barrier
+        lower_steps = rng.uniform(-1, 2, size=nb_dates)
+        barrier_path_lower = [85]  # Initial barrier
+        for step in lower_steps:
+            barrier_path_lower.append(barrier_path_lower[-1] + step)
+
+        # Upper barrier
+        upper_steps = rng.uniform(-2, 1, size=nb_dates)
+        barrier_path_upper = [115]  # Initial barrier
+        for step in upper_steps:
+            barrier_path_upper.append(barrier_path_upper[-1] + step)
+
     # Convert path to list format for JSON
     # Shape: (nb_stocks, nb_dates+1)
     path_list = selected_path[0].tolist()
@@ -282,14 +312,22 @@ def start_game():
     if 'barrier_type' in game:
         game_info['barrier_type'] = game['barrier_type']
 
-    return jsonify({
+    response = {
         'game_id': f"{product}_{path_idx}",
         'path': path_list,
         'machine_decisions': machine_decisions,
         'machine_exercise_date': machine_exercise_date,
         'payoffs_timeline': payoffs_timeline,
         'game_info': game_info
-    })
+    }
+
+    # Add barrier paths if they exist (for moving barrier games)
+    if barrier_path_upper is not None:
+        response['barrier_path_upper'] = barrier_path_upper
+    if barrier_path_lower is not None:
+        response['barrier_path_lower'] = barrier_path_lower
+
+    return jsonify(response)
 
 
 @app.route('/', methods=['GET'])
