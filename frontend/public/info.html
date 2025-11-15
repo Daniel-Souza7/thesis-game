@@ -265,19 +265,59 @@
         <h2>Game Payoffs</h2>
 
         <h3>Medium Difficulty:</h3>
-        <p style="margin-bottom: 10px;"><strong>UpAndOut Call:</strong> Pays (S(t) - K)⁺ if stock never exceeds upper barrier. Single stock, simple up barrier.</p>
-        <p style="margin-bottom: 10px;"><strong>DownAndOut MinPut:</strong> Pays (K - min(S₁,S₂,S₃))⁺ if no stock drops below barrier. 3 stocks, put on minimum.</p>
-        <p style="margin-bottom: 15px;"><strong>DoubleBarrier MaxCall:</strong> Pays (max(S₁...S₇) - K)⁺ if all stocks stay within barriers. 7 stocks, double barriers.</p>
+        <p style="margin-bottom: 10px;"><strong>UpAndOut Call:</strong> Pays (S(t) - K)⁺ if stock never exceeds upper barrier. Single stock, simple up barrier, simple call.</p>
+        <p style="margin-bottom: 10px;"><strong>DownAndOut MinPut:</strong> Pays (K - min(S₁,S₂,S₃))⁺ if no stock drops below barrier. 3 stocks, put on current minimum across all stocks.</p>
+        <p style="margin-bottom: 15px;"><strong>DoubleBarrier MaxCall:</strong> Pays (max(S₁...S₇) - K)⁺ if all stocks stay within barriers. 7 stocks, call on current maximum.</p>
 
         <h3>Hard Difficulty:</h3>
-        <p style="margin-bottom: 10px;"><strong>RandomlyMovingBarrier Call:</strong> Upper barrier moves randomly each step. Must track dynamic barrier to avoid knockout.</p>
-        <p style="margin-bottom: 10px;"><strong>UpAndOut MinPut:</strong> Pays (K - min(stocks))⁺ with upper barrier. Put payoff on weakest stock, 3 stocks.</p>
+        <p style="margin-bottom: 10px;"><strong>RandomlyMovingBarrier Call:</strong> Upper barrier moves uniformly randomly (-2;1) in each step. Must avoid dynamic barrier.</p>
+        <p style="margin-bottom: 10px;"><strong>UpAndOut MinPut:</strong> Pays (K - min(stocks))⁺ with upper barrier. Put payoff on current weakest stock, 3 stocks.</p>
         <p style="margin-bottom: 15px;"><strong>DownAndOut Best2Call:</strong> Pays on average of top 2 stocks if no stock hits lower barrier. 7 stocks, selective averaging.</p>
 
         <h3>Impossible Difficulty:</h3>
         <p style="margin-bottom: 10px;"><strong>DoubleBarrier Lookback Put:</strong> Pays (max price so far - current price)⁺. Path-dependent with double barriers.</p>
-        <p style="margin-bottom: 10px;"><strong>DoubleBarrier RankWeighted Call:</strong> Ranks 3 stocks, applies weights (15%, 50%, 35%) to 1st, 2nd, 3rd. Complex basket.</p>
-        <p style="margin-bottom: 10px;"><strong>DoubleMovingBarrier Dispersion:</strong> Pays sum of |Sᵢ - avg(S)|. Both barriers move randomly. Measures stock spread.</p>
+        <p style="margin-bottom: 10px;"><strong>DoubleBarrier RankWeighted Call:</strong> Ranks 3 stocks, applies weights (15%, 50%, 35%) to 1st, 2nd, 3rd. Complex double barriers basket.</p>
+        <p style="margin-bottom: 10px;"><strong>DoubleMovingBarrier Dispersion:</strong> Pays sum of |Sᵢ - avg(S)|. Both barriers move uniformly randomly. Measures stock spread.</p>
+      </div>
+
+      <!-- Tab 4: Underlying Process -->
+      <div id="tab4" class="tab-content">
+        <h2>The Underlying Process</h2>
+
+        <h3>Rough Heston Model:</h3>
+        <p style="margin-bottom: 10px;">
+          All stock paths are generated using the <strong>Rough Heston</strong> model, a more realistic alternative to classical Brownian motion. Research shows that volatility exhibits rough behavior (H ≈ 0.1) rather than smooth Brownian paths (H = 0.5).
+        </p>
+
+        <h3>Model Calibration:</h3>
+        <p style="margin-bottom: 10px;">
+          Based on <strong>"SPX Calibration of Option Approximations under Rough Heston Model"</strong> by Siow Woon Jeng & Adem Kiliçman (Mathematics, 2021), we calibrated the model to real SPX options data.
+        </p>
+
+        <h3>Stochastic Differential Equations:</h3>
+        <p style="margin-bottom: 5px; font-size: 9px; line-height: 1.6;">
+          dSₜ = μ Sₜ dt + √Vₜ Sₜ dWₜ<br/>
+          Vₜ = V₀ + 1/Γ(H+½) ∫₀ᵗ (t-s)^(H-½) [λ(θ - Vₛ)ds + ν√Vₛ dZₛ]
+        </p>
+        <p style="margin-bottom: 10px; font-size: 8px;">
+          where dWₜ and dZₜ are correlated Brownian motions with correlation ρ
+        </p>
+
+        <h3>Calibrated Parameters:</h3>
+        <p style="margin-bottom: 5px; font-size: 9px; line-height: 1.8;">
+          • Hurst exponent: H = 0.03 (very rough)<br/>
+          • Initial variance: V₀ = 0.026<br/>
+          • Long-term variance: θ = 0.07<br/>
+          • Mean reversion speed: λ = 0.5<br/>
+          • Vol-of-vol: ν = 0.29<br/>
+          • Correlation: ρ = -0.75 (leverage effect)<br/>
+          • Drift: μ = 0.02
+        </p>
+
+        <h3>Why Rough Heston?</h3>
+        <p style="margin-bottom: 10px;">
+          The low Hurst parameter (H = 0.03 << 0.5) captures the jagged, non-smooth behavior observed in real market volatility, making it more challenging and realistic for optimal stopping decisions.
+        </p>
       </div>
 
       <!-- Buttons -->
@@ -290,7 +330,7 @@
 
     <script>
       let currentTab = 1;
-      const totalTabs = 3;
+      const totalTabs = 4;
 
       function updateButtons() {
         const backBtn = document.getElementById('backButton');
