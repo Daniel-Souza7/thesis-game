@@ -2,7 +2,7 @@ flask
 flask-cors
 gunicorn
 numpy
-# Use CPU-only PyTorch to reduce memory footprint
---index-url https://download.pytorch.org/whl/cpu
-torch
 scipy
+# Use CPU-only PyTorch to reduce memory footprint
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
