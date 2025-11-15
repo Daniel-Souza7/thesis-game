@@ -1,0 +1,55 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts (frontend builds on Vercel)
+frontend/dist/
+frontend/build/
+
+# Environment files
+.env
+.env.local
+
+# Development logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Testing
+*.test.js
+*.spec.js
+tests/
+__tests__/
+
+# Documentation
+README.md
+*.md
+
+# Other
+.pytest_cache/
+.coverage
