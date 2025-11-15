@@ -53,7 +53,7 @@ PARAMS = {
 }
 
 # Training and test set sizes
-NB_TRAIN_PATHS = 50000
+NB_TRAIN_PATHS = 200000
 NB_TEST_PATHS = 2000
 
 # Output directories (relative to this script's location)
