@@ -38,12 +38,12 @@ GAME_CONFIGS = [
         'barrier_type': 'up'
     },
     {
-        'id': 'downandoutbskput',
-        'name': 'DownAndOutBskPut',
-        'description': '3 stocks, lower barrier at 70',
+        'id': 'downandoutminput',
+        'name': 'DownAndOutMinPut',
+        'description': '3 stocks, lower barrier at 85',
         'nb_stocks': 3,
         'difficulty': 'Medium',
-        'barrier': 70,
+        'barrier': 85,
         'barrier_type': 'down'
     },
     {

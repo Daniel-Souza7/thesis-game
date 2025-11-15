@@ -17,7 +17,7 @@ from backend.models.rough_heston import RoughHeston
 from backend.payoffs.game_payoffs import (
     # MEDIUM
     UpAndOutCall,
-    DownAndOutBasketPut,
+    DownAndOutMinPut,
     DoubleBarrierMaxCall,
     # HARD
     StepBarrierCall,
@@ -75,12 +75,12 @@ GAME_CONFIGS = [
         'payoff_kwargs': {'strike': 100, 'barrier': 130}
     },
     {
-        'id': 'downandoutbskput',
-        'name': 'DownAndOutBskPut',
+        'id': 'downandoutminput',
+        'name': 'DownAndOutMinPut',
         'nb_stocks': 3,
         'difficulty': 'Medium',
-        'payoff_class': DownAndOutBasketPut,
-        'payoff_kwargs': {'strike': 100, 'barrier': 70}
+        'payoff_class': DownAndOutMinPut,
+        'payoff_kwargs': {'strike': 100, 'barrier': 85}
     },
     {
         'id': 'doublebarriermaxcall',

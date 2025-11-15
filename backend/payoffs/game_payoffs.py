@@ -52,12 +52,11 @@ class UpAndOutCall(Payoff):
         return payoff
 
 
-class DownAndOutBasketPut(Payoff):
-    """Down-and-out put on arithmetic basket.
+class DownAndOutMinPut(Payoff):
+    """Down-and-out put on minimum of stocks.
 
     Barrier: min_{τ≤t,i} S_i(τ) > B_L
-    Basket: avg_i S_i(t)
-    Payoff: max(K - avg_i S_i(t), 0) if barrier not hit, else 0
+    Payoff: max(K - min_i S_i(t), 0) if barrier not hit, else 0
 
     Difficulty: MEDIUM
     Stocks: Multiple
@@ -78,9 +77,9 @@ class DownAndOutBasketPut(Payoff):
         min_price_overall = np.min(X, axis=(1, 2))  # min over stocks and time
         knocked_out = min_price_overall <= self.barrier
 
-        # Basket average at time t
-        basket_at_t = np.mean(X[:, :, -1], axis=1)
-        payoff = np.maximum(0, self.strike - basket_at_t)
+        # Payoff: put on minimum at time t
+        min_at_t = np.min(X[:, :, -1], axis=1)
+        payoff = np.maximum(0, self.strike - min_at_t)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0
