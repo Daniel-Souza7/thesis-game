@@ -222,12 +222,13 @@
       <!-- Tab 1: Welcome -->
       <div id="tab1" class="tab-content active">
         <h2>Welcome to the Optimal Stopping Game!</h2>
-        <p style="margin-bottom: 15px;">
-          This interactive game is part of my Master's thesis on optimal stopping problems
-          in quantitative finance. You'll compete against a pre-trained SRLSM (Stateful Randomized
-          Least Squares Monte Carlo) algorithm to maximize payoffs on exotic barrier options.
+        <h3 style="color: #00ffff; text-shadow: 0 0 10px #00ffff; text-align: center; margin-bottom: 20px;">Can You Beat the Machine?</h3>
+
+        <p style="margin-bottom: 20px; text-align: center;">
+          Challenge the AI trained Algorithm on various optimal stopping challenges related to real financial instruments
         </p>
-        <p>
+
+        <p style="text-align: center; margin-top: 30px;">
           Click NEXT to learn how to play!
         </p>
       </div>
@@ -359,6 +360,42 @@
         </p>
       </div>
 
+      <!-- Tab 6: About My Thesis -->
+      <div id="tab6" class="tab-content">
+        <h2 style="color: #ff00ff; text-shadow: 0 0 10px #ff00ff; margin-bottom: 20px;">About My Thesis</h2>
+
+        <p style="margin-bottom: 15px;">
+          This website was created with the objective of educating people on exotic financial instruments and demonstrating the practicability of machine learning in optimal stopping problems. This interactive game is just one part of my broader Master's thesis work.
+        </p>
+
+        <h3>My Research:</h3>
+        <p style="margin-bottom: 10px;">
+          My thesis focuses on applying advanced machine learning techniques, specifically the SRLSM (Stateful Randomized Least Squares Monte Carlo) algorithm, to solve complex optimal stopping problems in quantitative finance. These problems are central to pricing and hedging American-style exotic options under realistic market conditions.
+        </p>
+
+        <h3>What I've Done:</h3>
+        <p style="margin-bottom: 5px; font-size: 9px; line-height: 1.8;">
+          • Implemented the Rough Heston model with fractional volatility (H = 0.03)<br/>
+          • Calibrated model parameters to real SPX options data<br/>
+          • Developed SRLSM algorithm for path-dependent barrier options<br/>
+          • Trained 9 different models on exotic payoff structures<br/>
+          • Created this interactive web application to demonstrate the concepts<br/>
+          • Analyzed algorithm performance vs optimal strategies
+        </p>
+
+        <h3>Thesis Scope:</h3>
+        <p style="margin-bottom: 20px;">
+          Beyond this game, my thesis explores theoretical foundations of optimal stopping, numerical methods for stochastic volatility models, and comparative analysis of different machine learning approaches including neural networks, kernel methods, and randomized algorithms.
+        </p>
+
+        <p style="text-align: center; margin-top: 20px;">
+          <a href="https://linktr.ee/salvadorsouza" target="_blank" rel="noopener noreferrer"
+             style="color: #00ffff; text-shadow: 0 0 5px #00ffff; text-decoration: underline; font-size: 10px;">
+            Find all the documents about my thesis here
+          </a>
+        </p>
+      </div>
+
       <!-- Buttons -->
       <div class="button-group">
         <button id="backButton" onclick="prevTab()" class="back-button" style="display: none;">BACK</button>
@@ -369,7 +406,7 @@
 
     <script>
       let currentTab = 1;
-      const totalTabs = 5;
+      const totalTabs = 6;
 
       function startPlaying() {
         // Mark that user has visited the info page
@@ -389,12 +426,17 @@
         const nextBtn = document.getElementById('nextButton');
         const headerSection = document.getElementById('header-section');
 
-        // Show/hide header based on current tab
-        if (currentTab === 1) {
+        // Show/hide header based on current tab (only show on Tab 6)
+        if (currentTab === 6) {
           headerSection.style.display = 'block';
-          backBtn.style.display = 'none';
         } else {
           headerSection.style.display = 'none';
+        }
+
+        // Show/hide back button (hide on Tab 1)
+        if (currentTab === 1) {
+          backBtn.style.display = 'none';
+        } else {
           backBtn.style.display = 'inline-block';
         }
 
