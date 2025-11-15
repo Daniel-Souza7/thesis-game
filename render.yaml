@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: thesis-game-backend
+    runtime: python
+    buildCommand: "pip install -r backend/requirements.txt"
+    startCommand: "cd backend && gunicorn -w 4 -b 0.0.0.0:$PORT api:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: PORT
+        value: 10000

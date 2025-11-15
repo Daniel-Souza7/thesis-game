@@ -1,3 +1,7 @@
+# Backend (deployed on Render)
+backend/
+requirements.txt
+
 # Python virtual environments
 .venv/
 venv/

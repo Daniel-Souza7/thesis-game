@@ -3,9 +3,7 @@ import axios from 'axios'
 import GameBoard from './components/GameBoard'
 import GameSelectionModal from './components/GameSelectionModal'
 
-const API_BASE_URL = import.meta.env.PROD
-  ? 'https://your-backend-url.vercel.app/api'  // Update this for production
-  : '/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 function App() {
   const [gameState, setGameState] = useState('select') // select, loading, ready, playing, results
