@@ -85,11 +85,11 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={currentGame ? onClose : undefined}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">SELECT GAME</h2>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          {currentGame && <button className="modal-close" onClick={onClose}>✕</button>}
         </div>
 
         <div className="game-list">
@@ -120,11 +120,13 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
           ))}
         </div>
 
-        <div className="modal-footer">
-          <button className="arcade-button start" onClick={onClose}>
-            CANCEL
-          </button>
-        </div>
+        {currentGame && (
+          <div className="modal-footer">
+            <button className="arcade-button start" onClick={onClose}>
+              CANCEL
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

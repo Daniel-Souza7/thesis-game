@@ -245,8 +245,39 @@
         </ul>
       </div>
 
+      <!-- Tab 3: About the Research -->
+      <div id="tab3" class="tab-content">
+        <h2>About the Research</h2>
+
+        <h3>What is Optimal Stopping?</h3>
+        <p style="margin-bottom: 15px;">
+          Optimal stopping is a mathematical problem of choosing when to take a particular action
+          to maximize expected reward. In finance, this applies to exercising American options.
+        </p>
+
+        <h3>The SRLSM Algorithm:</h3>
+        <p style="margin-bottom: 15px;">
+          The Stateful Randomized Least Squares Monte Carlo algorithm is a machine learning approach
+          that learns optimal exercise strategies by training on thousands of simulated price paths.
+        </p>
+
+        <h3>Rough Heston Model:</h3>
+        <p style="margin-bottom: 15px;">
+          Stock prices are simulated using the Rough Heston model (H=0.03), which captures
+          realistic stochastic volatility behavior observed in real markets.
+        </p>
+
+        <h3>Why This Matters:</h3>
+        <p>
+          Understanding when to optimally exercise financial derivatives is crucial for traders,
+          risk managers, and quantitative analysts. This game demonstrates the complexity of these
+          decisions and the power of ML algorithms in solving them.
+        </p>
+      </div>
+
       <!-- Buttons -->
       <div class="button-group">
+        <button id="backButton" onclick="prevTab()" class="back-button" style="display: none;">BACK</button>
         <button onclick="window.close()" class="back-button">CLOSE TAB</button>
         <button id="nextButton" onclick="nextTab()" class="next-button">NEXT</button>
       </div>
@@ -254,23 +285,59 @@
 
     <script>
       let currentTab = 1;
-      const totalTabs = 2;
+      const totalTabs = 3;
 
-      function nextTab() {
-        // Hide current tab
-        document.getElementById('tab' + currentTab).classList.remove('active');
+      function updateButtons() {
+        const backBtn = document.getElementById('backButton');
+        const nextBtn = document.getElementById('nextButton');
 
-        // Move to next tab
-        currentTab++;
-
-        // Show next tab
-        document.getElementById('tab' + currentTab).classList.add('active');
+        // Show BACK button only if not on first tab
+        if (currentTab === 1) {
+          backBtn.style.display = 'none';
+        } else {
+          backBtn.style.display = 'inline-block';
+        }
 
         // Hide NEXT button on last tab
         if (currentTab === totalTabs) {
-          document.getElementById('nextButton').classList.add('hidden');
+          nextBtn.classList.add('hidden');
+        } else {
+          nextBtn.classList.remove('hidden');
         }
       }
+
+      function nextTab() {
+        if (currentTab < totalTabs) {
+          // Hide current tab
+          document.getElementById('tab' + currentTab).classList.remove('active');
+
+          // Move to next tab
+          currentTab++;
+
+          // Show next tab
+          document.getElementById('tab' + currentTab).classList.add('active');
+
+          updateButtons();
+        }
+      }
+
+      function prevTab() {
+        if (currentTab > 1) {
+          // Hide current tab
+          document.getElementById('tab' + currentTab).classList.remove('active');
+
+          // Move to previous tab
+          currentTab--;
+
+          // Show previous tab
+          document.getElementById('tab' + currentTab).classList.add('active');
+
+          updateButtons();
+        }
+      }
+
+      // Initialize button states
+      updateButtons();
     </script>
   </body>
 </html>
