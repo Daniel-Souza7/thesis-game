@@ -165,15 +165,15 @@
       }
 
       .back-button {
-        background: #ff0000;
-        border-color: #ff0000;
+        background: #9900ff;
+        border-color: #9900ff;
         color: #fff;
-        box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        box-shadow: 0 0 20px rgba(153, 0, 255, 0.8);
       }
 
       .back-button:hover {
-        background: #cc0000;
-        box-shadow: 0 0 30px rgba(255, 0, 0, 1);
+        background: #7700cc;
+        box-shadow: 0 0 30px rgba(153, 0, 255, 1);
         transform: scale(1.05);
       }
 
@@ -201,8 +201,10 @@
   </head>
   <body>
     <div class="info-container">
-      <h1>Hi, I'm Daniel</h1>
-      <p class="subtitle">a quantitative finance student<br/>who does not hate maths and code</p>
+      <div id="header-section">
+        <h1>Hi, I'm Daniel</h1>
+        <p class="subtitle">a quantitative finance student<br/>who does not hate maths and code</p>
+      </div>
 
       <!-- Tab 1: Welcome -->
       <div id="tab1" class="tab-content active">
@@ -245,34 +247,24 @@
         </ul>
       </div>
 
-      <!-- Tab 3: About the Research -->
+      <!-- Tab 3: Game Payoffs -->
       <div id="tab3" class="tab-content">
-        <h2>About the Research</h2>
+        <h2>Game Payoffs</h2>
 
-        <h3>What is Optimal Stopping?</h3>
-        <p style="margin-bottom: 15px;">
-          Optimal stopping is a mathematical problem of choosing when to take a particular action
-          to maximize expected reward. In finance, this applies to exercising American options.
-        </p>
+        <h3>Medium Difficulty:</h3>
+        <p style="margin-bottom: 10px;"><strong>UpAndOut Call:</strong> Pays (S(t) - K)⁺ if stock never exceeds upper barrier. Single stock, simple up barrier.</p>
+        <p style="margin-bottom: 10px;"><strong>DownAndOut MinPut:</strong> Pays (K - min(S₁,S₂,S₃))⁺ if no stock drops below barrier. 3 stocks, put on minimum.</p>
+        <p style="margin-bottom: 15px;"><strong>DoubleBarrier MaxCall:</strong> Pays (max(S₁...S₇) - K)⁺ if all stocks stay within barriers. 7 stocks, double barriers.</p>
 
-        <h3>The SRLSM Algorithm:</h3>
-        <p style="margin-bottom: 15px;">
-          The Stateful Randomized Least Squares Monte Carlo algorithm is a machine learning approach
-          that learns optimal exercise strategies by training on thousands of simulated price paths.
-        </p>
+        <h3>Hard Difficulty:</h3>
+        <p style="margin-bottom: 10px;"><strong>RandomlyMovingBarrier Call:</strong> Upper barrier moves randomly each step. Must track dynamic barrier to avoid knockout.</p>
+        <p style="margin-bottom: 10px;"><strong>UpAndOut MinPut:</strong> Pays (K - min(stocks))⁺ with upper barrier. Put payoff on weakest stock, 3 stocks.</p>
+        <p style="margin-bottom: 15px;"><strong>DownAndOut Best2Call:</strong> Pays on average of top 2 stocks if no stock hits lower barrier. 7 stocks, selective averaging.</p>
 
-        <h3>Rough Heston Model:</h3>
-        <p style="margin-bottom: 15px;">
-          Stock prices are simulated using the Rough Heston model (H=0.03), which captures
-          realistic stochastic volatility behavior observed in real markets.
-        </p>
-
-        <h3>Why This Matters:</h3>
-        <p>
-          Understanding when to optimally exercise financial derivatives is crucial for traders,
-          risk managers, and quantitative analysts. This game demonstrates the complexity of these
-          decisions and the power of ML algorithms in solving them.
-        </p>
+        <h3>Impossible Difficulty:</h3>
+        <p style="margin-bottom: 10px;"><strong>DoubleBarrier Lookback Put:</strong> Pays (max price so far - current price)⁺. Path-dependent with double barriers.</p>
+        <p style="margin-bottom: 10px;"><strong>DoubleBarrier RankWeighted Call:</strong> Ranks 3 stocks, applies weights (15%, 50%, 35%) to 1st, 2nd, 3rd. Complex basket.</p>
+        <p style="margin-bottom: 10px;"><strong>DoubleMovingBarrier Dispersion:</strong> Pays sum of |Sᵢ - avg(S)|. Both barriers move randomly. Measures stock spread.</p>
       </div>
 
       <!-- Buttons -->
@@ -290,11 +282,14 @@
       function updateButtons() {
         const backBtn = document.getElementById('backButton');
         const nextBtn = document.getElementById('nextButton');
+        const headerSection = document.getElementById('header-section');
 
-        // Show BACK button only if not on first tab
+        // Show/hide header based on current tab
         if (currentTab === 1) {
+          headerSection.style.display = 'block';
           backBtn.style.display = 'none';
         } else {
+          headerSection.style.display = 'none';
           backBtn.style.display = 'inline-block';
         }
 

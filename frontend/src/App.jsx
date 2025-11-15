@@ -9,7 +9,7 @@ const API_BASE_URL = import.meta.env.PROD
 
 function App() {
   const [gameState, setGameState] = useState('select') // select, loading, ready, playing, results
-  const [currentProduct, setCurrentProduct] = useState('upandoutcall')
+  const [currentProduct, setCurrentProduct] = useState(null)
   const [gameData, setGameData] = useState(null)
   const [error, setError] = useState(null)
 
