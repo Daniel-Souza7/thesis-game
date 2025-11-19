@@ -7,7 +7,9 @@ const ResultsDisplay = ({
   machineExerciseDate,
   gameInfo,
   onPlayAgain,
-  onSwitchProduct
+  onSwitchProduct,
+  playerDecision,
+  payoffsTimeline
 }) => {
   const playerWins = playerPayoff > machinePayoff
   const tie = playerPayoff === machinePayoff
@@ -25,9 +27,22 @@ const ResultsDisplay = ({
     return 'machine'
   }
 
-  // Check if barrier was hit (payoff = 0 typically means barrier hit)
-  const playerHitBarrier = playerPayoff === 0
-  const machineHitBarrier = machinePayoff === 0
+  // Check if player hit barrier using playerDecision
+  const playerHitBarrier = playerDecision === 'barrier_hit'
+
+  // Check if machine hit barrier: payoff is 0 AND there was a non-zero payoff before
+  // If payoff was always 0, it means the option was just out of the money, not barrier hit
+  const machineHitBarrier = (() => {
+    if (machinePayoff !== 0) return false
+
+    // Check if there was ever a non-zero payoff before the exercise date
+    // If yes, then barrier was hit (payoff went from non-zero to zero)
+    // If no, option was just out of the money
+    if (!payoffsTimeline || machineExerciseDate === undefined) return false
+
+    const hadNonZeroPayoff = payoffsTimeline.slice(0, machineExerciseDate + 1).some(p => p > 0)
+    return hadNonZeroPayoff
+  })()
 
   // If both hit barrier, they hit it at the same step (the player's exercise date)
   const machineBarrierStep = (machineHitBarrier && playerHitBarrier) ? playerExerciseDate : machineExerciseDate

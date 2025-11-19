@@ -264,6 +264,8 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
           gameInfo={game_info}
           onPlayAgain={onPlayAgain}
           onSwitchProduct={handleOpenGameSelection}
+          playerDecision={playerDecision}
+          payoffsTimeline={payoffs_timeline}
         />
       ) : (
         <>
