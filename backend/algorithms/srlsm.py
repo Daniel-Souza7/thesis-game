@@ -222,8 +222,9 @@ class SRLSM:
         # Store coefficients for this date
         self.coefficients_by_date[date] = coefficients
 
-        # Predict continuation values
-        return np.dot(basis, coefficients)
+        # Predict continuation values (regularized to be non-negative)
+        continuation_values = np.dot(basis, coefficients)
+        return np.maximum(0, continuation_values)
 
     def predict_exercise_decisions(self, test_paths):
         """
@@ -257,9 +258,10 @@ class SRLSM:
             basis = self.reservoir(X_tensor).detach().numpy()
             basis = np.concatenate([basis, np.ones((len(basis), 1))], axis=1)
 
-            # Predict continuation values using stored coefficients
+            # Predict continuation values using stored coefficients (regularized to be non-negative)
             if date in self.coefficients_by_date:
                 continuation_values = np.dot(basis, self.coefficients_by_date[date])
+                continuation_values = np.maximum(0, continuation_values)
             else:
                 # Fallback: use zero continuation value
                 continuation_values = np.zeros(nb_paths)

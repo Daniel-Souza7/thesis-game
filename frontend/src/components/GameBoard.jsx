@@ -171,11 +171,19 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
   // When animation reaches machine exercise date or maturity
   useEffect(() => {
     if (isAnimating && playerDecision) {
-      if (currentStep >= machineExerciseDate) {
+      // Check if barrier is hit during fast forward (before machine exercises)
+      if (currentStep < machineExerciseDate && isBarrierHit()) {
+        // Barrier hit before machine could exercise - machine gets $0
+        setIsAnimating(false)
+        setMachinePayoff(0)
+        finishGame()
+      } else if (currentStep >= machineExerciseDate) {
+        // Machine exercised before barrier
         setIsAnimating(false)
         setMachinePayoff(payoffs_timeline[machineExerciseDate])
         finishGame()
       } else if (currentStep >= nb_dates) {
+        // Reached maturity
         setIsAnimating(false)
         setMachinePayoff(payoffs_timeline[machineExerciseDate])
         finishGame()
@@ -256,6 +264,8 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
           gameInfo={game_info}
           onPlayAgain={onPlayAgain}
           onSwitchProduct={handleOpenGameSelection}
+          playerDecision={playerDecision}
+          payoffsTimeline={payoffs_timeline}
         />
       ) : (
         <>
@@ -268,6 +278,9 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
               machineExerciseDate={machineExerciseDate}
               revealedUpToStep={revealedUpToStep}
               isAnimating={isAnimating}
+              onHold={handleHold}
+              onExercise={handleExercise}
+              isPlayerTurn={isPlayerTurn}
             />
 
             <InfoPanel
@@ -286,10 +299,7 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
           </div>
 
           <ControlPanel
-            onHold={handleHold}
-            onExercise={handleExercise}
             onSwitchProduct={handleOpenGameSelection}
-            isPlayerTurn={isPlayerTurn}
             isAnimating={isAnimating}
             currentProduct={game_info.name}
           />

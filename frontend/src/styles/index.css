@@ -184,6 +184,15 @@ body::after {
   }
 }
 
+.chart-controls {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 2px solid #00ff00;
+}
+
 /* Info panel */
 .info-panel {
   background: #0a0a0a;
@@ -413,6 +422,12 @@ body::after {
   text-align: center;
   margin-top: 20px;
   box-shadow: inset 0 0 30px rgba(255, 255, 0, 0.2);
+}
+
+/* Make all buttons in results screen the same size */
+.results-screen .button-group .arcade-button {
+  font-size: 12px;
+  padding: 15px 30px;
 }
 
 .results-title {
@@ -647,6 +662,33 @@ body::after {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 25px;
+}
+
+.modal-header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.info-link-button {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  padding: 6px 10px;
+  background: #00ffff;
+  color: #000;
+  border: 2px solid #00ffff;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
+.info-link-button:hover {
+  background: #00aaff;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 1);
+  transform: scale(1.05);
 }
 
 .modal-title {
