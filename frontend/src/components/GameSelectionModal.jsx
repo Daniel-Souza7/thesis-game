@@ -11,7 +11,7 @@ const GameSelectionModal = ({ onClose, onSelectGame, currentGame }) => {
       name_line1: 'UpAndOut',
       name_line2: 'Call',
       desc_line1: '1 stock',
-      desc_line2: 'upper barrier at 130',
+      desc_line2: 'upper barrier at 120',
       difficulty: 'Medium'
     },
     {
