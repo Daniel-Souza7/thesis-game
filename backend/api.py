@@ -41,10 +41,10 @@ GAME_CONFIGS = [
     {
         'id': 'upandoutcall',
         'name': 'UpAndOutCall',
-        'description': '1 stock, upper barrier at 130',
+        'description': '1 stock, upper barrier at 120',
         'nb_stocks': 1,
         'difficulty': 'Medium',
-        'barrier': 130,
+        'barrier': 120,
         'barrier_type': 'up'
     },
     {

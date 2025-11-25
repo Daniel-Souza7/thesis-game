@@ -53,7 +53,7 @@ PARAMS = {
 }
 
 # Training and test set sizes
-NB_TRAIN_PATHS = 120000
+NB_TRAIN_PATHS = 12000
 NB_TEST_PATHS = 2000
 
 # Output directories (relative to this script's location)
@@ -72,7 +72,7 @@ GAME_CONFIGS = [
         'nb_stocks': 1,
         'difficulty': 'Medium',
         'payoff_class': UpAndOutCall,
-        'payoff_kwargs': {'strike': 100, 'barrier': 130}
+        'payoff_kwargs': {'strike': 100, 'barrier': 120}
     },
     {
         'id': 'downandoutminput',
