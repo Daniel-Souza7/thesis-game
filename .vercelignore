@@ -8,6 +8,10 @@ backend/train_models.py
 backend/fix_model_sizes.py
 backend/test_model_integrity.py
 
+# Exclude root requirements.txt (use api/requirements.txt instead)
+requirements.txt
+backend/requirements.txt
+
 # Python cache
 **/__pycache__/
 **/*.pyc
