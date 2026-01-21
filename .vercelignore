@@ -1,16 +1,25 @@
-# Backend (deployed on Render)
-backend/
-requirements.txt
+# Exclude LARGE training data (keep only test paths and models for runtime)
+backend/data/paths/train_*.npz
+backend/data/paths/dko_train.npz
+backend/data/paths/upandout_train.npz
+
+# Exclude training scripts (not needed at runtime)
+backend/train_models.py
+backend/fix_model_sizes.py
+backend/test_model_integrity.py
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.pytest_cache/
 
 # Python virtual environments
 .venv/
 venv/
 env/
 ENV/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
 
 # Node modules
 node_modules/
@@ -30,7 +39,7 @@ frontend/node_modules/
 .DS_Store
 Thumbs.db
 
-# Build artifacts (frontend builds on Vercel)
+# Build artifacts
 frontend/dist/
 frontend/build/
 
@@ -47,13 +56,11 @@ yarn-error.log*
 # Testing
 *.test.js
 *.spec.js
-tests/
 __tests__/
 
 # Documentation
 README.md
 *.md
 
-# Other
-.pytest_cache/
+# Coverage
 .coverage

@@ -1,92 +1,192 @@
-# Deployment Guide
+# Vercel Deployment Guide - Unified Stack
 
-## Architecture
+## Architecture (Updated)
 
-- **Backend**: Python/Flask API deployed on Render (Free tier - 512MB RAM)
-- **Frontend**: React/Vite app deployed on Vercel
-- **Strategy**: Lazy loading with 1 model cached at a time
+**Everything on Vercel:**
+- ✅ Frontend: React/Vite → Vercel CDN
+- ✅ Backend: Flask API → Vercel Serverless Functions
+- ✅ Data: Test paths + models (~320 KB) → Bundled in deployment
 
-## Backend (Render)
+**Key Benefits:**
+- No separate backend hosting needed
+- Data bundled = faster cold starts (~2-4s vs 10-15s)
+- Simpler deployment (one platform)
+- Better free tier limits
 
-### Memory Optimization
-The app uses **lazy loading** to fit all 9 games in 512MB:
-- Only 1 model loaded in memory at a time (max 85MB)
-- Models load on-demand when requested
-- Default game pre-loaded at startup for instant first click
-- Total memory usage: ~300-400MB (safe margin)
+## Deployment Steps
 
-### Avoiding Cold Starts
+### 1. Install Vercel CLI
 
-Render's free tier spins down after **15 minutes** of inactivity. To prevent this:
-
-1. **Use a free cron service** to ping the keep-alive endpoint every 14 minutes:
-   - Endpoint: `https://thesis-game-backend-gzpt.onrender.com/api/keepalive`
-   - Recommended services:
-     - [cron-job.org](https://cron-job.org) - Free, reliable
-     - [UptimeRobot](https://uptimerobot.com) - Free monitoring with pings
-     - [EasyCron](https://www.easycron.com) - Free tier available
-
-2. **Setup instructions for cron-job.org**:
-   ```
-   1. Sign up at https://cron-job.org
-   2. Create new cron job
-   3. URL: https://thesis-game-backend-gzpt.onrender.com/api/keepalive
-   4. Interval: Every 14 minutes
-   5. Save and enable
-   ```
-
-### Endpoints
-
-- `GET /api/health` - Health check
-- `GET /api/keepalive` - Keep-alive (for cron jobs)
-- `GET /api/game/info` - List all available games
-- `GET /api/game/start?product={game_id}` - Start a new game
-
-## Frontend (Vercel)
-
-### Environment Variables
-
-Production environment is configured in `frontend/.env.production`:
-```
-VITE_API_BASE_URL=https://thesis-game-backend-gzpt.onrender.com/api
+```bash
+npm install -g vercel
 ```
 
-### Deployment
-1. Push to GitHub
-2. Vercel auto-deploys from the `claude/thesis-game-minigame-app-*` branch
-3. Frontend available at your Vercel URL
+### 2. Login to Vercel
 
-## Available Games
+```bash
+vercel login
+```
 
-All 9 games are available with lazy loading:
+### 3. Deploy
 
-**MEDIUM:**
-- UpAndOutCall (1 stock, 13MB)
-- DownAndOutMinPut (3 stocks, 37MB)
-- DoubleBarrierMaxCall (7 stocks, 85MB)
+```bash
+# Preview deployment
+vercel
 
-**HARD:**
-- RandomlyMovingBarrierCall (1 stock, 13MB)
-- UpAndOutMinPut (3 stocks, 37MB)
-- DownAndOutBest2Call (7 stocks, 85MB)
+# Production deployment
+vercel --prod
+```
 
-**IMPOSSIBLE:**
-- DoubleBarrierLookbackFloatingPut (1 stock, 13MB)
-- DoubleBarrierRankWeightedBskCall (3 stocks, 37MB)
-- DoubleMovingBarrierDispersionCall (7 stocks, 85MB)
+## What Gets Deployed
 
-## Performance Notes
+### ✅ Included (~320 KB):
+```
+├── api/index.py           (Serverless function wrapper)
+├── backend/
+│   ├── data/
+│   │   ├── paths/
+│   │   │   ├── test_1stock.npz   (~21 KB)
+│   │   │   ├── test_3stock.npz   (~62 KB)
+│   │   │   └── test_7stock.npz   (~144 KB)
+│   │   └── trained_models/
+│   │       └── *.pkl (9 models,  ~90 KB total)
+│   ├── algorithms/
+│   ├── models/
+│   ├── payoffs/
+│   └── api.py
+└── frontend/
+```
 
-- **First game click**: Instant (pre-loaded at startup)
-- **Switching games**: 3-5 seconds (loading new model)
-- **Cold start** (if service spun down): 10-15 seconds
-  - Avoided with keep-alive cron job
+### ❌ Excluded (via .vercelignore):
+- `train_*.npz` files (~546 MB training data)
+- Training scripts
+- Python cache
+- Documentation
 
-## Upgrading for Better Performance
+## Configuration Files
 
-To remove lazy loading delays and cold starts:
+### `vercel.json`
+```json
+{
+  "version": 2,
+  "builds": [
+    { "src": "frontend/package.json", "use": "@vercel/static-build" },
+    { "src": "api/index.py", "use": "@vercel/python" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.py" },
+    { "src": "/(.*)", "dest": "/frontend/$1" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
+}
+```
 
-**Render Starter Plan ($7/month)**:
-- 2GB RAM → Can load all models at startup
-- No cold starts
-- Instant game switching
+## API Endpoints
+
+After deployment:
+
+```
+https://your-project.vercel.app/api/game/start?product=upandoutcall
+https://your-project.vercel.app/api/game/info
+```
+
+## Performance
+
+### Cold Start (after ~5 min idle):
+- **Time**: ~2-4 seconds
+- **Process**:
+  1. Spin up Python environment
+  2. Load Flask + dependencies
+  3. Load model from disk (~10 KB)
+  4. Return response
+
+### Warm Request:
+- **Time**: ~200-500ms
+- Model already in memory
+
+## Model File Sizes (After Cleanup)
+
+All 9 models total: **~90 KB**
+- 1-stock games: ~10 KB each
+- 3-stock games: ~10 KB each
+- 7-stock games: ~10 KB each
+
+Training artifacts removed:
+- ~~Before: 503 MB~~
+- **After: 90 KB** (99.98% reduction!)
+
+## Free Tier Limits
+
+**Vercel Free:**
+- Bandwidth: 100 GB/month
+- Serverless executions: 100 GB-Hours/month
+- Functions: 10s max duration
+
+**Estimated capacity:**
+- ~100,000+ game requests/month
+
+## Troubleshooting
+
+### Backend 404 Errors
+Frontend must call `/api/*` routes:
+```javascript
+axios.get('/api/game/start?product=upandoutcall')
+```
+
+### Cold Start Timeout
+Increase duration in `vercel.json`:
+```json
+"maxDuration": 30
+```
+
+### Out of Memory
+Increase memory (max 3008 MB):
+```json
+"memory": 3008
+```
+
+## Update Models
+
+1. Train locally: `python backend/train_models.py`
+2. Commit `.pkl` files
+3. Deploy: `vercel --prod`
+
+## Alternative Deployment Options
+
+### Option A: Vercel (Current - Recommended)
+- ✅ Everything bundled
+- ✅ Fast cold starts
+- ✅ Simple deployment
+
+### Option B: Separate Backend (Previous Setup)
+- Backend: Railway/Render/Fly.io
+- Frontend: Vercel
+- Need keep-alive pings
+- Slower cold starts
+
+## Cost Comparison
+
+| Platform | Cost | Cold Start | Notes |
+|----------|------|------------|-------|
+| **Vercel (unified)** | Free | 2-4s | Bundled data, simple |
+| Render + Vercel | Free | 10-15s | Needs keep-alive |
+| Railway + Vercel | $5/mo | < 1s | Always on |
+
+## Production Checklist
+
+- [ ] Deploy to Vercel: `vercel --prod`
+- [ ] Test all 9 games
+- [ ] Verify cold start < 10s
+- [ ] Check API routes work
+- [ ] Set custom domain (optional)
+- [ ] Delete training files locally
+
+## Support
+
+- Vercel Docs: https://vercel.com/docs
+- Python Runtime: https://vercel.com/docs/functions/serverless-functions/runtimes/python
