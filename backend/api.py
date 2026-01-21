@@ -209,9 +209,10 @@ def load_model_for_game(game_id):
         print(f"  Cache full, removing {oldest_key}")
         del LOADED_MODELS_CACHE[oldest_key]
 
-    # Store in cache
+    # Store in cache (support both 'rt' and 'srlsm' keys for backwards compatibility)
+    rt_model = model_data.get('rt', model_data.get('srlsm'))
     model_cache = {
-        'srlsm': model_data['srlsm'],
+        'rt': rt_model,
         'model': model_data['model'],
         'payoff': model_data['payoff'],
         'test_paths': test_paths,
@@ -295,11 +296,11 @@ def start_game():
     selected_path = test_paths[path_idx:path_idx+1]  # Shape: (1, nb_stocks, nb_dates+1)
 
     # Predict machine exercise decision
-    srlsm = model_cache['srlsm']
+    rt = model_cache['rt']
     payoff = model_cache['payoff']
     model = model_cache['model']
 
-    exercise_dates = srlsm.predict_exercise_decisions(selected_path)
+    exercise_dates = rt.predict_exercise_decisions(selected_path)
     machine_exercise_date = int(exercise_dates[0])
 
     # Compute payoffs at each timestep

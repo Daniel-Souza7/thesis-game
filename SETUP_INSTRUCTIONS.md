@@ -20,7 +20,7 @@ npm install
 
 ### Step 2: Train the Models (IMPORTANT!)
 
-This step is **required** before running the app. It generates the training data and trains the SRLSM models.
+This step is **required** before running the app. It generates the training data and trains the RT models.
 
 ```bash
 python backend/train_models.py
@@ -28,7 +28,7 @@ python backend/train_models.py
 
 This will take approximately 2-5 minutes and will:
 - Generate 50,000 training paths for each game
-- Train SRLSM models on these paths
+- Train RT models on these paths
 - Generate 500 test paths for gameplay
 - Save everything to `backend/data/`
 
@@ -42,7 +42,7 @@ Generating 50000 training paths...
 Saved training paths to backend/data/paths/upandout_train.npz
 Shape: (50000, 3, 11)
 
-Training SRLSM model...
+Training RT model...
 time path gen: 0.0001
 Training complete!
   Option price: 8.1234

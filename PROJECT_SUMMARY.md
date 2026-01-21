@@ -2,7 +2,7 @@
 
 ## What We Built
 
-An interactive web-based game where players challenge a trained SRLSM (Special Randomized Least Squares Monte Carlo) algorithm on optimal stopping problems for financial derivatives with barrier features.
+An interactive web-based game where players challenge a trained RT (Special Randomized Least Squares Monte Carlo) algorithm on optimal stopping problems for financial derivatives with barrier features.
 
 ## Key Features
 
@@ -24,7 +24,7 @@ An interactive web-based game where players challenge a trained SRLSM (Special R
 
 - **Real-time decisions**: At each time step (10 total), choose to Hold or Exercise
 - **Live animation**: Stock prices animate step-by-step
-- **Machine opponent**: Pre-trained SRLSM algorithm makes optimal decisions
+- **Machine opponent**: Pre-trained RT algorithm makes optimal decisions
 - **Score comparison**: See if you can beat the algorithm!
 - **Retro arcade UI**: Old-school gaming vibe with neon colors and CRT effects
 
@@ -32,7 +32,7 @@ An interactive web-based game where players challenge a trained SRLSM (Special R
 
 1. **Pre-training Phase** (runs once before deployment):
    - Generate 50,000 paths for training
-   - Train SRLSM algorithm using backward induction
+   - Train RT algorithm using backward induction
    - Generate 500 test paths for gameplay
    - Save models and paths to disk
 
@@ -50,7 +50,7 @@ An interactive web-based game where players challenge a trained SRLSM (Special R
 - **Framework**: Flask (API server)
 - **ML Library**: PyTorch (randomized neural networks)
 - **Numerical**: NumPy (path generation, payoff computation)
-- **Algorithm**: SRLSM (optimal stopping)
+- **Algorithm**: RT (optimal stopping)
 
 ### Frontend
 - **Framework**: React 18
@@ -77,7 +77,7 @@ thesis-game/
 │   │   └── barrier_options.py        # Option payoff functions
 │   ├── algorithms/
 │   │   ├── __init__.py
-│   │   ├── srlsm.py                  # SRLSM algorithm
+│   │   ├── rt.py                  # RT algorithm
 │   │   └── utils/
 │   │       ├── __init__.py
 │   │       └── randomized_neural_networks.py
@@ -138,12 +138,12 @@ Configured based on thesis research:
 | Dividend yield (q) | 0 |
 | Time to maturity (T) | 1 year |
 | Number of time steps | 10 |
-| SRLSM hidden neurons | 20 |
+| RT hidden neurons | 20 |
 | Activation factors | (1.0, 1.0, 1.0) |
 
 ## Algorithms Implemented
 
-### SRLSM (Special Randomized Least Squares Monte Carlo)
+### RT (Special Randomized Least Squares Monte Carlo)
 
 Path-dependent variant of RLSM that:
 - Uses randomized neural networks for feature extraction

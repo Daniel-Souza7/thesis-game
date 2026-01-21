@@ -517,32 +517,34 @@
       <div id="tab5" class="tab-content">
         <h2>About the Machine</h2>
 
-        <h3>The Algorithm: SRLSM</h3>
+        <h3>The Algorithm: RT</h3>
         <p style="margin-bottom: 10px;">
-          The machine uses <strong>SRLSM</strong> (Stateful Randomized Least Squares Monte Carlo), a specialized algorithm for optimal stopping problems with path-dependent payoffs.
+          The machine uses <strong>RT</strong> (Randomized Neural Networks Algorithm), a universal algorithm for optimal stopping problems that handles both path-dependent and non-path-dependent payoffs.
         </p>
 
         <h3>How It Works:</h3>
         <p style="margin-bottom: 5px; font-size: 9px; line-height: 1.8;">
           <strong>1. Backward Induction:</strong> Works backward from maturity (t=12) to present (t=0)<br/>
           <strong>2. At each time step:</strong><br/>
-          &nbsp;&nbsp;• Evaluates immediate exercise value using full path history<br/>
+          &nbsp;&nbsp;• Evaluates immediate exercise value (uses full path history for barriers)<br/>
           &nbsp;&nbsp;• Estimates continuation value (expected future payoff if holding)<br/>
           &nbsp;&nbsp;• Decides: Exercise if immediate > continuation, else Hold<br/>
           <strong>3. Learning Continuation Value:</strong><br/>
-          &nbsp;&nbsp;• Uses randomized neural network (reservoir) with LeakyReLU activation<br/>
+          &nbsp;&nbsp;• Uses randomized neural network with GELU activation<br/>
           &nbsp;&nbsp;• Fits coefficients via least squares regression<br/>
+          &nbsp;&nbsp;• Includes current payoff as input feature for better learning<br/>
           &nbsp;&nbsp;• Trains only on in-the-money paths for efficiency
         </p>
 
         <h3>Training Parameters:</h3>
         <p style="margin-bottom: 10px; font-size: 9px; line-height: 1.8;">
-          • Training paths: 120,000 simulated paths<br/>
+          • Training paths: 12,000 simulated paths<br/>
           • Test paths: 2,000 paths<br/>
-          • Hidden neurons: 20<br/>
+          • Hidden neurons: 40<br/>
+          • Activation: GELU<br/>
           • Time steps: 12 (monthly over 1 year)<br/>
           • Train ITM only: Yes<br/>
-          • Use payoff as input: No
+          • Use payoff as input: Yes
         </p>
 
         <h3>Important Note:</h3>
@@ -569,7 +571,7 @@
         <p style="margin-bottom: 20px; font-size: 9px; line-height: 1.8;">
           • Implemented the Rough Heston model with fractional vol (H = 0.03)<br/>
           • Calibrated model parameters to real SPX options data<br/>
-          • Developed SRLSM algorithm for path-dependent barrier options<br/>
+          • Developed RT algorithm for path-dependent and non-path-dependent options<br/>
           • Trained 9 different models on exotic payoff structures<br/>
           • Created this interactive web application to demonstrate the concepts<br/>
           • Analyzed algorithm performance vs optimal strategies

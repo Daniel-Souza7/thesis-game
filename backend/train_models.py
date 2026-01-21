@@ -1,9 +1,9 @@
 """
-Pre-training script for SRLSM models and path generation.
+Pre-training script for RT models and path generation.
 
 This script:
-1. Generates shared training paths (50,000) for each stock count (1, 3, 7)
-2. Trains SRLSM models for all 9 games using shared paths
+1. Generates shared training paths (12,000) for each stock count (1, 3, 7)
+2. Trains RT models for all 9 games using shared paths
 3. Generates shared test paths (2,000) for each stock count
 4. Saves models and paths to disk
 
@@ -28,7 +28,7 @@ from backend.payoffs.game_payoffs import (
     DoubleBarrierRankWeightedBasketCall,
     DoubleStepBarrierDispersionCall
 )
-from backend.algorithms.srlsm import SRLSM
+from backend.algorithms.rt import RT
 
 
 # Game parameters - Rough Heston model
@@ -44,10 +44,13 @@ PARAMS = {
     'dividend': 0,
     'maturity': 1,
     'nb_dates': 12,
-    'hidden_size': 20,
+    'hidden_size': 40,  # RT default
     'factors': (1.0, 1.0, 1.0),
     'train_ITM_only': True,
-    'use_payoff_as_input': False,
+    'use_payoff_as_input': True,  # RT default
+    'use_barrier_as_input': False,
+    'activation': 'gelu',  # RT default
+    'dropout': 0.0,
     'v0': 0.026,
     'nb_steps_mult': 10
 }
@@ -188,7 +191,7 @@ def generate_shared_paths(nb_stocks, train_seed, test_seed):
 
 
 def train_game(config, train_paths):
-    """Train SRLSM for a specific game configuration."""
+    """Train RT for a specific game configuration."""
     print(f"\n{'='*60}")
     print(f"Training {config['name']} ({config['difficulty']})")
     print(f"{'='*60}")
@@ -214,19 +217,22 @@ def train_game(config, train_paths):
     # Create payoff
     payoff = config['payoff_class'](**config['payoff_kwargs'])
 
-    # Train SRLSM
-    print("Training SRLSM model...")
-    srlsm = SRLSM(
+    # Train RT
+    print("Training RT model...")
+    rt = RT(
         model=model,
         payoff=payoff,
         hidden_size=PARAMS['hidden_size'],
         factors=PARAMS['factors'],
         train_ITM_only=PARAMS['train_ITM_only'],
-        use_payoff_as_input=PARAMS['use_payoff_as_input']
+        use_payoff_as_input=PARAMS['use_payoff_as_input'],
+        use_barrier_as_input=PARAMS['use_barrier_as_input'],
+        activation=PARAMS['activation'],
+        dropout=PARAMS['dropout']
     )
 
-    price, time_gen = srlsm.price(train_eval_split=2, stock_paths=train_paths)
-    avg_exercise_time = srlsm.get_exercise_time()
+    price, time_gen = rt.price(train_eval_split=2, stock_paths=train_paths)
+    avg_exercise_time = rt.get_exercise_time()
 
     print(f"\nTraining complete!")
     print(f"  Option price: {price:.4f}")
@@ -236,7 +242,7 @@ def train_game(config, train_paths):
     model_file = os.path.join(MODELS_DIR, f"{config['id']}.pkl")
     with open(model_file, 'wb') as f:
         pickle.dump({
-            'srlsm': srlsm,
+            'rt': rt,
             'model': model,
             'payoff': payoff,
             'price': price,
@@ -245,13 +251,13 @@ def train_game(config, train_paths):
         }, f)
     print(f"Saved trained model to {model_file}")
 
-    return srlsm
+    return rt
 
 
 def main():
     """Main training script."""
     print("\n" + "="*60)
-    print("SRLSM Model Training Script - All 9 Games (Rough Heston)")
+    print("RT Model Training Script - All 9 Games (Rough Heston)")
     print("="*60)
     print(f"\nModel: Rough Heston")
     print(f"Parameters:")

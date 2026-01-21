@@ -1,10 +1,10 @@
 # Optimal Stopping Game
 
-An interactive web game where players challenge machine learning algorithms (SRLSM) on optimal stopping problems for financial derivatives with early exercise features.
+An interactive web game where players challenge machine learning algorithms (RT) on optimal stopping problems for financial derivatives with early exercise features.
 
 ## Overview
 
-This application lets users "battle" against trained SRLSM (Special Randomized Least Squares Monte Carlo) algorithms in an optimal stopping game. Players make real-time decisions to either hold or exercise barrier options, competing to achieve higher payoffs than the machine.
+This application lets users "battle" against trained RT (Randomized Neural Networks Algorithm) in an optimal stopping game. Players make real-time decisions to either hold or exercise barrier options, competing to achieve higher payoffs than the machine.
 
 ## Features
 
@@ -19,8 +19,8 @@ This application lets users "battle" against trained SRLSM (Special Randomized L
   - Retro arcade game aesthetic
 
 - **Pre-trained Models:**
-  - SRLSM algorithms trained on 50,000 paths
-  - 500 pre-generated test paths for smooth gameplay
+  - RT algorithms trained on 12,000 paths
+  - 2,000 pre-generated test paths for smooth gameplay
   - Instant game start (no training delay)
 
 ## Project Structure
@@ -28,9 +28,9 @@ This application lets users "battle" against trained SRLSM (Special Randomized L
 ```
 thesis-game/
 ├── backend/                  # Python backend
-│   ├── models/              # Black-Scholes path generator
+│   ├── models/              # Rough Heston path generator
 │   ├── payoffs/             # Barrier option payoff functions
-│   ├── algorithms/          # SRLSM implementation
+│   ├── algorithms/          # RT implementation
 │   ├── data/                # Pre-trained models and paths
 │   ├── train_models.py      # Training script
 │   ├── api.py               # Flask API server
@@ -69,20 +69,19 @@ thesis-game/
    ```
 
    This will:
-   - Generate 50,000 training paths for each game
-   - Train SRLSM models
-   - Generate 500 test paths
+   - Generate 12,000 training paths for each stock count (1, 3, 7)
+   - Train RT models for all 9 games
+   - Generate 2,000 test paths for each stock count
    - Save everything to `backend/data/`
 
    Expected output:
    ```
-   Training paths: 50000
-   Test paths: 500
+   Training paths: 12000
+   Test paths: 2000
 
-   Training UpAndOut Min Put (3 stocks)...
-   Training DKO Lookback Put (1 stock)...
+   Training all 9 games (MEDIUM, HARD, IMPOSSIBLE)...
 
-   All models trained successfully!
+   All 9 models trained successfully!
    ```
 
 3. **Start the API server:**
@@ -114,31 +113,28 @@ thesis-game/
 
 ## Game Parameters
 
-Based on thesis research with the following parameters:
+Based on thesis research with Rough Heston model:
 
 | Parameter | Value |
 |-----------|-------|
-| Drift (r) | 0.02 |
-| Volatility (σ) | 0.2 |
+| Drift (μ) | 0.02 |
+| Volatility (ν) | 0.29 |
+| Hurst (H) | 0.03 (rough) |
 | Initial Spot | 100 |
 | Strike (K) | 100 |
 | Dividend (q) | 0 |
 | Maturity (T) | 1 year |
-| Time Steps | 10 |
-| Hidden Size | 20 neurons |
+| Time Steps | 12 |
+| Hidden Size | 40 neurons |
+| Activation | GELU |
 | Factors | (1.0, 1.0, 1.0) |
 
-### Game 1: Up-and-Out Min Put
-- **Stocks**: 3
-- **Payoff**: max(K - min(S₁, S₂, S₃), 0)
-- **Barrier**: 110 (upper)
-- **Rule**: Option knocked out if any stock hits 110
+### 9 Games Across 3 Difficulty Levels
 
-### Game 2: Double Knock-Out Lookback Put
-- **Stocks**: 1
-- **Payoff**: max(max_τ S(τ) - S(T), 0)
-- **Barriers**: 90 (lower), 110 (upper)
-- **Rule**: Option knocked out if stock hits either barrier
+See the info page in the game for full details on all 9 games:
+- **MEDIUM**: UpAndOutCall, DownAndOutMinPut, DoubleBarrierMaxCall
+- **HARD**: StepBarrierCall, UpAndOutMinPut, DownAndOutBest2Call
+- **IMPOSSIBLE**: DoubleBarrierLookbackPut, RankWeightedBasketCall, DoubleMovingBarrierDispersionCall
 
 ## How to Play
 
@@ -183,20 +179,30 @@ Alternatively, deploy via Vercel dashboard by connecting your GitHub repository.
 
 ## Technical Details
 
-### SRLSM Algorithm
+### RT Algorithm
 
-The Special Randomized Least Squares Monte Carlo (SRLSM) algorithm:
-- Handles path-dependent options (barriers, lookbacks)
-- Uses randomized neural networks for continuation value estimation
+The Randomized Neural Networks Algorithm (RT):
+- Universal algorithm for both path-dependent and non-path-dependent options
+- Uses randomized neural networks with GELU activation
 - Backward induction from maturity to present
+- Includes current payoff as input feature for better learning
 - Optimal stopping strategy learned from training paths
 
 ### Stock Model
 
-Geometric Brownian Motion (GBM):
+Rough Heston Model:
 ```
-dS_t = (r - q) S_t dt + σ S_t dW_t
+dS_t = μ S_t dt + √V_t S_t dW_t
+V_t = V_0 + 1/Γ(H+½) ∫₀ᵗ (t-s)^(H-½) [λ(θ - V_s)ds + ν√V_s dZ_s]
 ```
+
+Where:
+- H = 0.03 (Hurst exponent, very rough)
+- V₀ = 0.026 (initial variance)
+- θ = 0.07 (long-term variance)
+- λ = 0.5 (mean reversion)
+- ν = 0.29 (vol-of-vol)
+- ρ = -0.75 (correlation, leverage effect)
 
 ### Tech Stack
 
@@ -217,7 +223,7 @@ dS_t = (r - q) S_t dt + σ S_t dW_t
 - Frontend: `npm install`
 
 ### Training takes too long
-- Training 50k paths should take 2-5 minutes
+- Training 12k paths should take 1-3 minutes per game
 - Reduce `NB_TRAIN_PATHS` in `train_models.py` for testing (min 1000)
 
 ## License
