@@ -103,9 +103,10 @@ class RoughHeston:
         if seed is not None:
             np.random.seed(seed)
 
-        spot_path = np.empty((nb_steps + 1, nb_stocks))
+        # Use float32 for memory efficiency
+        spot_path = np.empty((nb_steps + 1, nb_stocks), dtype=np.float32)
         spot_path[0] = start_X
-        var_path = np.empty((nb_steps + 1, nb_stocks))
+        var_path = np.empty((nb_steps + 1, nb_stocks), dtype=np.float32)
         if v0 is None:
             var_path[0] = self.v0
         else:
@@ -114,8 +115,9 @@ class RoughHeston:
         log_spot_drift = lambda v, t: (mu - 0.5 * np.maximum(v, 0))
         log_spot_diffusion = lambda v: np.sqrt(np.maximum(v, 0))
 
-        normal_numbers_1 = np.random.normal(0, 1, (nb_steps, nb_stocks))
-        normal_numbers_2 = np.random.normal(0, 1, (nb_steps, nb_stocks))
+        # Generate random numbers as float32
+        normal_numbers_1 = np.random.normal(0, 1, (nb_steps, nb_stocks)).astype(np.float32)
+        normal_numbers_2 = np.random.normal(0, 1, (nb_steps, nb_stocks)).astype(np.float32)
         dW = normal_numbers_1 * np.sqrt(self.dt)
         dZ = (self.correlation * normal_numbers_1 + np.sqrt(
             1 - self.correlation ** 2) * normal_numbers_2) * np.sqrt(self.dt)

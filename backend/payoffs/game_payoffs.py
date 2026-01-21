@@ -157,8 +157,8 @@ class StepBarrierCall(Payoff):
 
         # Generate barrier path up to time t (deterministic based on seed)
         rng = np.random.RandomState(self.seed)
-        barrier_steps = rng.uniform(-2, 1, size=t)
-        barrier_path = np.zeros(t_plus_1)
+        barrier_steps = rng.uniform(-2, 1, size=t).astype(np.float32)
+        barrier_path = np.zeros(t_plus_1, dtype=np.float32)
         barrier_path[0] = self.initial_barrier
 
         for tau in range(1, t_plus_1):
@@ -385,16 +385,16 @@ class DoubleStepBarrierDispersionCall(Payoff):
         rng = np.random.RandomState(self.seed)
 
         # Lower barrier: adds uniform(-1, 2) at each step
-        lower_steps = rng.uniform(-1, 2, size=t)
-        lower_barrier_path = np.zeros(t_plus_1)
+        lower_steps = rng.uniform(-1, 2, size=t).astype(np.float32)
+        lower_barrier_path = np.zeros(t_plus_1, dtype=np.float32)
         lower_barrier_path[0] = self.barrier_down
 
         for tau in range(1, t_plus_1):
             lower_barrier_path[tau] = lower_barrier_path[tau-1] + lower_steps[tau-1]
 
         # Upper barrier: adds uniform(-2, 1) at each step
-        upper_steps = rng.uniform(-2, 1, size=t)
-        upper_barrier_path = np.zeros(t_plus_1)
+        upper_steps = rng.uniform(-2, 1, size=t).astype(np.float32)
+        upper_barrier_path = np.zeros(t_plus_1, dtype=np.float32)
         upper_barrier_path[0] = self.barrier_up
 
         for tau in range(1, t_plus_1):

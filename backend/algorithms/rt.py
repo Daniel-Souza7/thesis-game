@@ -157,7 +157,7 @@ class RT:
         if self.use_payoff_as_input:
             # Compute payoffs at all time steps
             nb_paths, nb_stocks, nb_dates_plus_1 = stock_paths.shape
-            payoffs = np.zeros((nb_paths, nb_dates_plus_1))
+            payoffs = np.zeros((nb_paths, nb_dates_plus_1), dtype=np.float32)
 
             for t in range(nb_dates_plus_1):
                 payoffs[:, t] = self._eval_payoff(stock_paths, date=t)
@@ -180,7 +180,7 @@ class RT:
         else:
             strike = self.model.spot if hasattr(self.model, 'spot') else stock_paths[0, :self.model.nb_stocks, 0]
         if np.isscalar(strike):
-            strike = np.full(self.model.nb_stocks, strike)
+            strike = np.full(self.model.nb_stocks, strike, dtype=np.float32)
 
         # Initialize with terminal payoff
         values = self._eval_payoff(stock_paths, date=None)
@@ -210,7 +210,7 @@ class RT:
             # Add barrier values as input hint (if enabled)
             if self.nb_barriers > 0:
                 strike_scalar = strike[0] if isinstance(strike, np.ndarray) else strike
-                barrier_features = np.array([[b / strike_scalar for b in self.barrier_values]])
+                barrier_features = np.array([[b / strike_scalar for b in self.barrier_values]], dtype=np.float32)
                 barrier_features = np.repeat(barrier_features, current_state.shape[0], axis=0)
                 current_state = np.concatenate([current_state, barrier_features], axis=1)
 
@@ -269,7 +269,7 @@ class RT:
         if self.use_payoff_as_input:
             # Compute payoffs at all time steps
             nb_paths, nb_stocks, nb_dates_plus_1 = stock_paths.shape
-            payoffs = np.zeros((nb_paths, nb_dates_plus_1))
+            payoffs = np.zeros((nb_paths, nb_dates_plus_1), dtype=np.float32)
 
             for t in range(nb_dates_plus_1):
                 payoffs[:, t] = self._eval_payoff(stock_paths, date=t)
@@ -291,13 +291,13 @@ class RT:
         else:
             strike = self.model.spot if hasattr(self.model, 'spot') else stock_paths[0, :self.model.nb_stocks, 0]
         if np.isscalar(strike):
-            strike = np.full(self.model.nb_stocks, strike)
+            strike = np.full(self.model.nb_stocks, strike, dtype=np.float32)
 
         # Initialize with terminal payoff
         values = self._eval_payoff(stock_paths, date=None)
 
         # Initialize martingale M for upper bound (starts at terminal payoff)
-        M = np.zeros((nb_paths, self.model.nb_dates + 1))
+        M = np.zeros((nb_paths, self.model.nb_dates + 1), dtype=np.float32)
         M[:, -1] = values.copy()
 
         # Clear previous learned policy
@@ -325,7 +325,7 @@ class RT:
             # Add barrier values as input hint (if enabled)
             if self.nb_barriers > 0:
                 strike_scalar = strike[0] if isinstance(strike, np.ndarray) else strike
-                barrier_features = np.array([[b / strike_scalar for b in self.barrier_values]])
+                barrier_features = np.array([[b / strike_scalar for b in self.barrier_values]], dtype=np.float32)
                 barrier_features = np.repeat(barrier_features, current_state.shape[0], axis=0)
                 current_state = np.concatenate([current_state, barrier_features], axis=1)
 
@@ -390,8 +390,8 @@ class RT:
         """
         # Initialize continuation values to 0 (prevents noisy extrapolation for OTM paths)
         nb_paths = current_state.shape[0]
-        continuation_values = np.zeros(nb_paths)
-        coefficients = np.zeros(self.nb_base_fcts)  # Default to zero coefficients
+        continuation_values = np.zeros(nb_paths, dtype=np.float32)
+        coefficients = np.zeros(self.nb_base_fcts, dtype=np.float32)  # Default to zero coefficients
 
         # Identify ITM paths in training set, and all ITM paths (for prediction)
         if self.train_ITM_only:
@@ -411,7 +411,7 @@ class RT:
             X_tensor_train = torch.from_numpy(X_train).type(torch.float32)
             basis_train = self.reservoir(X_tensor_train).detach().numpy()
             # Add constant term (intercept)
-            basis_train = np.concatenate([basis_train, np.ones((len(basis_train), 1))], axis=1)
+            basis_train = np.concatenate([basis_train, np.ones((len(basis_train), 1), dtype=np.float32)], axis=1)
 
             # Standard least squares (no regularization)
             coefficients = np.linalg.lstsq(
@@ -425,7 +425,7 @@ class RT:
             X_tensor_all = torch.from_numpy(X_all).type(torch.float32)
             basis_all = self.reservoir(X_tensor_all).detach().numpy()
             # Add constant term (intercept)
-            basis_all = np.concatenate([basis_all, np.ones((len(basis_all), 1))], axis=1)
+            basis_all = np.concatenate([basis_all, np.ones((len(basis_all), 1), dtype=np.float32)], axis=1)
 
             # Predict continuation values for all ITM paths
             continuation_values[in_the_money_all] = np.dot(basis_all, coefficients)
@@ -459,7 +459,7 @@ class RT:
         else:
             strike = self.model.spot if hasattr(self.model, 'spot') else stock_paths[0, :self.model.nb_stocks, 0]
         if np.isscalar(strike):
-            strike = np.full(self.model.nb_stocks, strike)
+            strike = np.full(self.model.nb_stocks, strike, dtype=np.float32)
 
         # Initialize tracking
         exercise_times = np.full(nb_paths, nb_dates, dtype=int)  # Default to maturity = nb_dates
@@ -500,7 +500,7 @@ class RT:
             # Evaluate basis functions using reservoir
             X_tensor = torch.from_numpy(current_state).type(torch.float32)
             basis = self.reservoir(X_tensor).detach().numpy()
-            basis = np.concatenate([basis, np.ones((len(basis), 1))], axis=1)
+            basis = np.concatenate([basis, np.ones((len(basis), 1), dtype=np.float32)], axis=1)
 
             continuation_values = np.dot(basis, coefficients)
 
@@ -550,10 +550,10 @@ class RT:
         else:
             strike = self.model.spot if hasattr(self.model, 'spot') else stock_paths[0, :self.model.nb_stocks, 0]
         if np.isscalar(strike):
-            strike = np.full(self.model.nb_stocks, strike)
+            strike = np.full(self.model.nb_stocks, strike, dtype=np.float32)
 
         # Compute all payoffs upfront
-        payoffs = np.zeros((nb_paths, nb_dates + 1))
+        payoffs = np.zeros((nb_paths, nb_dates + 1), dtype=np.float32)
         for t in range(nb_dates + 1):
             payoffs[:, t] = self._eval_payoff(stock_paths, date=t)
 
@@ -589,7 +589,7 @@ class RT:
             # Evaluate basis functions using reservoir
             X_tensor = torch.from_numpy(current_state).type(torch.float32)
             basis = self.reservoir(X_tensor).detach().numpy()
-            basis = np.concatenate([basis, np.ones((len(basis), 1))], axis=1)
+            basis = np.concatenate([basis, np.ones((len(basis), 1), dtype=np.float32)], axis=1)
 
             # Compute continuation values
             continuation_values = np.dot(basis, coefficients)
