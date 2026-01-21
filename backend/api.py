@@ -118,7 +118,7 @@ GAME_CONFIGS = [
     {
         'id': 'doublemovingbarrierdispersioncall',
         'name': 'DoubleMovingBarrierDispersionCall',
-        'description': '7 stocks, moving barriers at 85 and 115',
+        'description': '7 stocks, moving barriers, payoff = max(std_dev - 1, 0)',
         'nb_stocks': 7,
         'difficulty': 'Impossible',
         'barrier_up': 115,
@@ -236,8 +236,17 @@ def get_game_info():
             'description': data['description'],
             'nb_stocks': data['nb_stocks'],
             'difficulty': data['difficulty'],
-            'strike': 100  # K=100 for all games
         }
+
+        # Get strike from loaded model if available, otherwise default to 100
+        if key in LOADED_MODELS_CACHE:
+            model_cache = LOADED_MODELS_CACHE[key]
+            payoff = model_cache['payoff']
+            games[key]['strike'] = float(payoff.strike) if hasattr(payoff, 'strike') else 100
+        else:
+            # Default strike (will be corrected when model loads)
+            # Note: dispersion game uses K=1, others use K=100
+            games[key]['strike'] = 1 if 'dispersion' in key else 100
 
         # Add barrier information if available
         if 'barrier' in data:
@@ -356,7 +365,7 @@ def start_game():
         'description': game_metadata['description'],
         'nb_stocks': game_metadata['nb_stocks'],
         'nb_dates': nb_dates,
-        'strike': 100,  # K=100 for all games
+        'strike': float(payoff.strike) if hasattr(payoff, 'strike') else 100,
         'maturity': float(model.maturity),
         'dt': float(model.dt),
         'difficulty': game_metadata['difficulty']
