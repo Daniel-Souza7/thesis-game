@@ -94,7 +94,7 @@ const InfoPanel = ({
     } else if (name.includes('Dispersion')) {
       return (
         <span>
-          (Σ<sub>i</sub> |S<sub>i</sub>(t) - avg(S)|)<sup>+</sup>
+          (std(S<sub>1</sub>,...,S<sub>7</sub>) - K)<sup>+</sup>
           <br />
           <span style={{ fontSize: '7px' }}>If B<sub>L</sub>(τ) {'<'} avg(S(τ)) {'<'} B<sub>U</sub>(τ) ∀τ</span>
         </span>
@@ -160,7 +160,7 @@ const InfoPanel = ({
       <div className="info-item">
         <span className="info-label">STRIKE PRICE</span>
         <div className="info-value" style={{ fontSize: '14px', color: '#ffff00' }}>
-          K = $100
+          K = ${gameInfo.strike || 100}
         </div>
       </div>
 

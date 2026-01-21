@@ -123,7 +123,8 @@ GAME_CONFIGS = [
         'difficulty': 'Impossible',
         'barrier_up': 115,
         'barrier_down': 85,
-        'barrier_type': 'double'
+        'barrier_type': 'double',
+        'strike': 1  # Dispersion uses K=1, not 100
     }
 ]
 
@@ -145,6 +146,7 @@ def load_game_metadata():
             'nb_stocks': config['nb_stocks'],
             'difficulty': config['difficulty'],
             'barrier_type': config['barrier_type'],
+            'strike': config.get('strike', 100),  # Default K=100, except dispersion (K=1)
             'loaded': False  # Track if model is loaded
         }
 
@@ -236,7 +238,7 @@ def get_game_info():
             'description': data['description'],
             'nb_stocks': data['nb_stocks'],
             'difficulty': data['difficulty'],
-            'strike': 100  # K=100 for all games
+            'strike': data.get('strike', 100)  # K=100 for most, K=1 for dispersion
         }
 
         # Add barrier information if available
@@ -350,13 +352,17 @@ def start_game():
     # Shape: (nb_stocks, nb_dates+1)
     path_list = selected_path[0].tolist()
 
+    # Get strike from payoff object (different for dispersion call: K=1)
+    payoff = model_cache['payoff']
+    strike = getattr(payoff, 'strike', 100)
+
     # Game metadata
     game_info = {
         'name': game_metadata['name'],
         'description': game_metadata['description'],
         'nb_stocks': game_metadata['nb_stocks'],
         'nb_dates': nb_dates,
-        'strike': 100,  # K=100 for all games
+        'strike': float(strike),
         'maturity': float(model.maturity),
         'dt': float(model.dt),
         'difficulty': game_metadata['difficulty']
