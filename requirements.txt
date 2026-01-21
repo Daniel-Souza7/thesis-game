@@ -1,2 +1,8 @@
-# This file references the backend requirements for Render deployment
--r backend/requirements.txt
+# Python dependencies for Vercel serverless functions
+flask==3.0.0
+flask-cors==4.0.0
+numpy==1.24.3
+scipy==1.11.4
+# Use CPU-only PyTorch to reduce deployment size
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.1.0
