@@ -358,8 +358,8 @@ class DoubleStepBarrierDispersionCall(Payoff):
       B_L(τ+1) = B_L(τ) + uniform(-1, 2)
       B_U(τ+1) = B_U(τ) + uniform(-2, 1)
     Barrier: For all τ≤t, check if avg_i S_i(τ) > B_L(τ) AND avg_i S_i(τ) < B_U(τ)
-    Dispersion: Σ_i |S_i(t) - avg_i S_i(t)|
-    Payoff: max(dispersion(t), 0) if never hit barriers, else 0
+    Dispersion: std_dev(S_1(t), ..., S_d(t)) = sqrt(mean((S_i - avg(S))^2))
+    Payoff: max(std_dev(t) - K, 0) if never hit barriers, else 0
 
     Difficulty: IMPOSSIBLE
     Stocks: Multiple
@@ -409,15 +409,14 @@ class DoubleStepBarrierDispersionCall(Payoff):
         breaches_lower = np.any(basket_prices <= lower_barrier_path[np.newaxis, :], axis=1)
         knocked_out = breaches_upper | breaches_lower
 
-        # Dispersion payoff at time t: Σ|S_i(t) - avg(S_i(t))|
+        # Dispersion payoff at time t: std_dev(S_1(t), ..., S_d(t)) - K
         prices_at_t = X[:, :, -1]  # (nb_paths, nb_stocks)
-        basket_at_t = basket_prices[:, -1]  # (nb_paths,)
 
-        # Calculate dispersion: sum of absolute deviations from mean
-        deviations = np.abs(prices_at_t - basket_at_t[:, np.newaxis])
-        total_dispersion = np.sum(deviations, axis=1)
+        # Calculate dispersion: standard deviation across stocks
+        mean_price = np.mean(prices_at_t, axis=1, keepdims=True)  # (nb_paths, 1)
+        std_dev = np.sqrt(np.mean((prices_at_t - mean_price) ** 2, axis=1))  # (nb_paths,)
 
-        payoff = np.maximum(0, total_dispersion)
+        payoff = np.maximum(0, std_dev - self.strike)
 
         # Zero out knocked-out paths
         payoff[knocked_out] = 0

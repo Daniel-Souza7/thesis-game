@@ -141,7 +141,7 @@ GAME_CONFIGS = [
         'nb_stocks': 7,
         'difficulty': 'Impossible',
         'payoff_class': DoubleStepBarrierDispersionCall,
-        'payoff_kwargs': {'strike': 100, 'barrier_up': 115, 'barrier_down': 85, 'seed': 42}
+        'payoff_kwargs': {'strike': 1, 'barrier_up': 115, 'barrier_down': 85, 'seed': 42}
     }
 ]
 

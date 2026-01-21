@@ -470,7 +470,7 @@
         <h3>Impossible Difficulty:</h3>
         <p style="margin-bottom: 10px;"><strong>DoubleBarrier Lookback Put:</strong> Pays (max price so far - current price)⁺. Path-dependent with double barriers.</p>
         <p style="margin-bottom: 10px;"><strong>DoubleBarrier RankWeighted Call:</strong> Ranks 3 stocks, applies weights (15%, 50%, 35%) to 1st, 2nd, 3rd. Complex double barriers basket.</p>
-        <p style="margin-bottom: 10px;"><strong>DoubleMovingBarrier Dispersion:</strong> Pays sum of |Sᵢ - avg(S)|. Both barriers move uniformly randomly. Measures stock spread.</p>
+        <p style="margin-bottom: 10px;"><strong>DoubleMovingBarrier Dispersion:</strong> Pays max(std_dev(stocks) - 1, 0). Both barriers move randomly. Measures volatility spread.</p>
       </div>
 
       <!-- Tab 4: Underlying Process -->
