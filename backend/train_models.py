@@ -256,6 +256,13 @@ def train_game(config, train_paths):
     print(f"  Option price: {price:.4f}")
     print(f"  Average exercise time: {avg_exercise_time:.4f}")
 
+    # Clean training artifacts to reduce file size
+    # These arrays are only needed during training, not for inference
+    if hasattr(rt, '_exercise_dates'):
+        delattr(rt, '_exercise_dates')
+    if hasattr(rt, 'split'):
+        delattr(rt, 'split')
+
     # Save trained model
     model_file = os.path.join(MODELS_DIR, f"{config['id']}.pkl")
     with open(model_file, 'wb') as f:
