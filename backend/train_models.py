@@ -2,9 +2,12 @@
 Pre-training script for RT models and path generation.
 
 This script:
-1. Generates shared training paths (12,000) for each stock count (1, 3, 7)
+1. Generates shared training paths for each stock count (1, 3, 7)
+   - 1-stock: 15M paths
+   - 3-stock: 5M paths
+   - 7-stock: 2M paths
 2. Trains RT models for all 9 games using shared paths
-3. Generates shared test paths (2,000) for each stock count
+3. Generates shared test paths (500) for each stock count
 4. Saves models and paths to disk
 
 Run this BEFORE starting the API server.
@@ -55,9 +58,18 @@ PARAMS = {
     'nb_steps_mult': 10
 }
 
-# Training and test set sizes
-NB_TRAIN_PATHS = 12000
-NB_TEST_PATHS = 2000
+# Training and test set sizes (stock-count-specific)
+TRAIN_PATHS_CONFIG = {
+    1: 15_000_000,  # 1-stock games
+    3: 5_000_000,   # 3-stock games
+    7: 2_000_000    # 7-stock games
+}
+
+TEST_PATHS_CONFIG = {
+    1: 500,  # 1-stock games
+    3: 500,  # 3-stock games
+    7: 500   # 7-stock games
+}
 
 # Output directories (relative to this script's location)
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -148,6 +160,9 @@ GAME_CONFIGS = [
 
 def generate_shared_paths(nb_stocks, train_seed, test_seed):
     """Generate shared training and test paths for a given number of stocks."""
+    nb_train_paths = TRAIN_PATHS_CONFIG[nb_stocks]
+    nb_test_paths = TEST_PATHS_CONFIG[nb_stocks]
+
     print(f"\n{'='*60}")
     print(f"Generating shared paths for {nb_stocks} stock(s)")
     print(f"{'='*60}")
@@ -162,7 +177,7 @@ def generate_shared_paths(nb_stocks, train_seed, test_seed):
         hurst=PARAMS['hurst'],
         spot=PARAMS['spot'],
         nb_stocks=nb_stocks,
-        nb_paths=NB_TRAIN_PATHS,
+        nb_paths=nb_train_paths,
         nb_dates=PARAMS['nb_dates'],
         maturity=PARAMS['maturity'],
         dividend=PARAMS['dividend'],
@@ -171,7 +186,7 @@ def generate_shared_paths(nb_stocks, train_seed, test_seed):
     )
 
     # Generate training paths
-    print(f"Generating {NB_TRAIN_PATHS} training paths...")
+    print(f"Generating {nb_train_paths:,} training paths...")
     train_paths, _ = model.generate_paths(seed=train_seed)
     train_path_file = os.path.join(PATHS_DIR, f'train_{nb_stocks}stock.npz')
     np.savez_compressed(train_path_file, paths=train_paths)
@@ -179,8 +194,8 @@ def generate_shared_paths(nb_stocks, train_seed, test_seed):
     print(f"Shape: {train_paths.shape}")
 
     # Generate test paths
-    print(f"Generating {NB_TEST_PATHS} test paths...")
-    model.nb_paths = NB_TEST_PATHS
+    print(f"Generating {nb_test_paths:,} test paths...")
+    model.nb_paths = nb_test_paths
     test_paths, _ = model.generate_paths(seed=test_seed)
     test_path_file = os.path.join(PATHS_DIR, f'test_{nb_stocks}stock.npz')
     np.savez_compressed(test_path_file, paths=test_paths)
@@ -196,6 +211,9 @@ def train_game(config, train_paths):
     print(f"Training {config['name']} ({config['difficulty']})")
     print(f"{'='*60}")
 
+    nb_stocks = config['nb_stocks']
+    nb_train_paths = TRAIN_PATHS_CONFIG[nb_stocks]
+
     # Create Rough Heston model
     model = RoughHeston(
         drift=PARAMS['drift'],
@@ -205,8 +223,8 @@ def train_game(config, train_paths):
         correlation=PARAMS['correlation'],
         hurst=PARAMS['hurst'],
         spot=PARAMS['spot'],
-        nb_stocks=config['nb_stocks'],
-        nb_paths=NB_TRAIN_PATHS,
+        nb_stocks=nb_stocks,
+        nb_paths=nb_train_paths,
         nb_dates=PARAMS['nb_dates'],
         maturity=PARAMS['maturity'],
         dividend=PARAMS['dividend'],
@@ -263,8 +281,12 @@ def main():
     print(f"Parameters:")
     for key, value in PARAMS.items():
         print(f"  {key}: {value}")
-    print(f"\nTraining paths: {NB_TRAIN_PATHS}")
-    print(f"Test paths: {NB_TEST_PATHS}")
+    print(f"\nTraining paths by stock count:")
+    for nb_stocks, nb_paths in TRAIN_PATHS_CONFIG.items():
+        print(f"  {nb_stocks}-stock: {nb_paths:,} paths")
+    print(f"\nTest paths by stock count:")
+    for nb_stocks, nb_paths in TEST_PATHS_CONFIG.items():
+        print(f"  {nb_stocks}-stock: {nb_paths:,} paths")
     print(f"\nGames to train: {len(GAME_CONFIGS)}")
 
     # Create output directories
