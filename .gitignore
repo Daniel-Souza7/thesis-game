@@ -10,6 +10,7 @@ ENV/
 *.egg-info/
 dist/
 build/
+.venv_new/
 
 # Node
 node_modules/
