@@ -10,7 +10,24 @@ Key principles:
 """
 
 import numpy as np
-from backend.payoffs.barrier_options import Payoff
+
+
+class Payoff:
+    """Base class for all payoff functions."""
+
+    def __init__(self, strike):
+        self.strike = strike
+
+    def eval(self, X):
+        """Evaluate the payoff.
+
+        Args:
+            X: Stock price(s). Shape depends on payoff type.
+
+        Returns:
+            Payoff value(s)
+        """
+        raise NotImplementedError("Subclasses must implement eval()")
 
 
 # ============================================================================
