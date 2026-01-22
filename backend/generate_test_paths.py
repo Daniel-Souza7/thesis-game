@@ -63,9 +63,9 @@ def generate_paths(nb_stocks, nb_paths, seed=12345):
         **MODEL_PARAMS
     )
 
-    # Generate paths
+    # Generate paths (returns tuple of spot_paths, var_paths)
     t_start = time.time()
-    paths = model.generate_paths()
+    paths, _ = model.generate_paths()
     gen_time = time.time() - t_start
 
     print(f"  Shape: {paths.shape}")
