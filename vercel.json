@@ -11,7 +11,8 @@
     "api/*.py": {
       "memory": 1024,
       "maxDuration": 10,
-      "includeFiles": "backend/**"
+      "includeFiles": "backend/**",
+      "excludeFiles": "{**/.venv/**,**/.venv_new/**,**/venv/**,**/node_modules/**,**/__pycache__/**,**/tests/**,**/*.pyc,**/train_*.npz,**/dko_*.npz,**/upandout_*.npz,backend/train_models.py,backend/fix_model_sizes.py,backend/test_model_integrity.py}"
     }
   }
 }

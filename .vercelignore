@@ -19,11 +19,15 @@ backend/requirements.txt
 **/*.pyd
 .pytest_cache/
 
-# Python virtual environments
+# Python virtual environments (CRITICAL - exclude ALL venv dirs!)
 .venv/
+.venv_new/
 venv/
 env/
 ENV/
+**/.venv/
+**/.venv_new/
+**/venv/
 
 # Node modules
 node_modules/
