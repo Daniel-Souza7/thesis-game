@@ -36,9 +36,17 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
       const minPrice = Math.min(...currentPrices)
       return minPrice <= game_info.barrier
     } else if (game_info.barrier_type === 'double') {
+      // Check individual stock prices against barriers
+      // Upper barrier: hit if max stock >= barrier
+      // Lower barrier: hit if min stock <= barrier
       const maxPrice = Math.max(...currentPrices)
       const minPrice = Math.min(...currentPrices)
-      return maxPrice >= game_info.barrier_up || minPrice <= game_info.barrier_down
+
+      // Use moving barriers if available, otherwise static
+      const upperBarrier = barrier_path_upper ? barrier_path_upper[currentStep] : game_info.barrier_up
+      const lowerBarrier = barrier_path_lower ? barrier_path_lower[currentStep] : game_info.barrier_down
+
+      return maxPrice >= upperBarrier || minPrice <= lowerBarrier
     }
 
     return false
