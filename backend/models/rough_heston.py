@@ -5,7 +5,26 @@ Variance follows a fractional process with Hurst parameter H < 0.5.
 
 import math
 import numpy as np
-import scipy.special as scispe
+
+# Lazy import scipy - only needed for path generation, not inference
+# This allows the module to be imported on Vercel (where scipy isn't installed)
+# without failing, as long as generate_paths() isn't called
+_scispe = None
+
+
+def _get_scipy_special():
+    """Lazy load scipy.special module."""
+    global _scispe
+    if _scispe is None:
+        try:
+            import scipy.special as scispe
+            _scispe = scispe
+        except ImportError:
+            raise ImportError(
+                "scipy is required for path generation in RoughHeston. "
+                "Install with: pip install scipy"
+            )
+    return _scispe
 
 
 class RoughHeston:
@@ -94,6 +113,7 @@ class RoughHeston:
             times = np.repeat(np.expand_dims(times, 1), vars.shape[1], axis=1)
         int1 = np.sum(times * la * (thet - vars[:step]) * self.dt, axis=0)
         int2 = np.sum(times * vol * np.sqrt(vars[:step]) * dZ[:step], axis=0)
+        scispe = _get_scipy_special()  # Lazy load scipy
         v = v0 + (int1 + int2) / scispe.gamma(self.H + 0.5)
         return np.maximum(v, 0)
 

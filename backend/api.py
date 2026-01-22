@@ -21,6 +21,9 @@ import numpy as np
 import pickle
 import random
 
+# Import numpy-only RT for inference (no PyTorch needed!)
+from backend.algorithms.rt_numpy import RTNumpy
+
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
@@ -212,7 +215,16 @@ def load_model_for_game(game_id):
         del LOADED_MODELS_CACHE[oldest_key]
 
     # Store in cache (support both 'rt' and 'srlsm' keys for backwards compatibility)
-    rt_model = model_data.get('rt', model_data.get('srlsm'))
+    # Check if model is in numpy format (converted from PyTorch)
+    if model_data.get('_is_numpy_format', False):
+        # Numpy format: create RTNumpy wrapper
+        rt_model = RTNumpy(model_data['rt'])
+        print(f"  ✓ Loaded as RTNumpy (no PyTorch needed)")
+    else:
+        # Legacy PyTorch format
+        rt_model = model_data.get('rt', model_data.get('srlsm'))
+        print(f"  ⚠ Legacy PyTorch format (requires torch)")
+
     model_cache = {
         'rt': rt_model,
         'model': model_data['model'],

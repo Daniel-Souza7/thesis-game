@@ -1,15 +1,10 @@
 [project]
 name = "thesis-game-api"
 version = "1.0.0"
-description = "Optimal Stopping Game API"
+description = "Optimal Stopping Game API - Numpy-only (no PyTorch)"
 requires-python = ">=3.12"
 dependencies = [
     "flask==3.0.0",
     "flask-cors==4.0.0",
     "numpy==1.26.0",
-    "scipy==1.11.4",
-    "torch==2.2.0",
 ]
-
-[tool.uv]
-find-links = ["https://download.pytorch.org/whl/cpu"]
