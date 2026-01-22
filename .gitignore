@@ -10,7 +10,7 @@ ENV/
 *.egg-info/
 dist/
 build/
-.venv_new/
+
 
 # Node
 node_modules/
@@ -37,7 +37,7 @@ Thumbs.db
 # Environment
 .env
 .env.local
-
+.venv_new
 # Data files (optional - comment out if you want to commit pre-trained models)
 # backend/data/trained_models/*.pkl
 # backend/data/paths/*.npz
