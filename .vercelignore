@@ -24,6 +24,7 @@ backend/requirements.txt
 venv/
 env/
 ENV/
+.venv_new/
 
 # Node modules
 node_modules/
