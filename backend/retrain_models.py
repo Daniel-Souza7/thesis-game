@@ -113,17 +113,21 @@ GAME_CONFIGS = {
 }
 
 # Model parameters (RoughHeston)
+# These MUST match the parameters used to generate training paths
 MODEL_PARAMS = {
     'drift': 0.02,
-    'volatility': 0.3,
+    'volatility': 0.29,
     'spot': 100,
-    'mean': 0.04,
-    'speed': 2.0,
-    'correlation': -0.7,
+    'mean': 0.07,
+    'speed': 0.5,
+    'correlation': -0.75,
     'maturity': 1.0,
     'nb_dates': 12,
     'nb_paths': 15_000_000,
-    'hurst': 0.25,
+    'hurst': 0.03,
+    'dividend': 0,
+    'v0': 0.026,
+    'nb_steps_mult': 10,
 }
 
 # RT training parameters
