@@ -357,7 +357,8 @@ class DoubleStepBarrierDispersionCall(Payoff):
     Moving Barriers:
       B_L(τ+1) = B_L(τ) + uniform(-1, 2)
       B_U(τ+1) = B_U(τ) + uniform(-2, 1)
-    Barrier: For all τ≤t, check if avg_i S_i(τ) > B_L(τ) AND avg_i S_i(τ) < B_U(τ)
+    Barrier: For all τ≤t, check if max_i S_i(τ) < B_U(τ) AND min_i S_i(τ) > B_L(τ)
+             (knocked out if any individual stock breaches either barrier)
     Dispersion: std_dev(S_1(t), ..., S_d(t)) = sqrt(mean((S_i - avg(S))^2))
     Payoff: max(std_dev(t) - K, 0) if never hit barriers, else 0
 
@@ -400,13 +401,15 @@ class DoubleStepBarrierDispersionCall(Payoff):
         for tau in range(1, t_plus_1):
             upper_barrier_path[tau] = upper_barrier_path[tau-1] + upper_steps[tau-1]
 
-        # Calculate basket average at each time step
-        basket_prices = np.mean(X, axis=1)  # (nb_paths, t+1)
+        # Check individual stock prices against moving barriers
+        # Upper barrier: knocked out if max stock >= barrier at any time
+        # Lower barrier: knocked out if min stock <= barrier at any time
+        max_prices = np.max(X, axis=1)  # (nb_paths, t+1) - max across stocks at each time
+        min_prices = np.min(X, axis=1)  # (nb_paths, t+1) - min across stocks at each time
 
-        # Check if basket breaches either barrier at any time τ
-        # At each τ, check if basket(τ) <= B_L(τ) or basket(τ) >= B_U(τ)
-        breaches_upper = np.any(basket_prices >= upper_barrier_path[np.newaxis, :], axis=1)
-        breaches_lower = np.any(basket_prices <= lower_barrier_path[np.newaxis, :], axis=1)
+        # Check if any stock breaches barriers at any time τ
+        breaches_upper = np.any(max_prices >= upper_barrier_path[np.newaxis, :], axis=1)
+        breaches_lower = np.any(min_prices <= lower_barrier_path[np.newaxis, :], axis=1)
         knocked_out = breaches_upper | breaches_lower
 
         # Dispersion payoff at time t: std_dev(S_1(t), ..., S_d(t)) - K
