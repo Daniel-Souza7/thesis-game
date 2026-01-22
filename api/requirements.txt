@@ -1,6 +1,6 @@
 # Python dependencies for Vercel serverless functions (Python 3.12)
 # NOTE: PyTorch has been removed! Models are now in numpy-only format.
-# See backend/convert_models_to_numpy.py to convert models.
+# IMPORTANT: numpy 2.x is required because pickle files were saved with numpy 2.x
 flask==3.0.0
 flask-cors==4.0.0
-numpy==1.26.0
+numpy>=2.0.0

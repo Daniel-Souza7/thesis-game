@@ -2,28 +2,18 @@
 Vercel serverless function wrapper for Flask API.
 
 This file adapts the Flask app to work as a Vercel serverless function.
+Vercel automatically detects the 'app' variable as a WSGI application.
 """
 
 import sys
 import os
 
-# Add backend directory to path
+# Add project root to path so 'backend' package can be imported
 current_dir = os.path.dirname(os.path.abspath(__file__))
-backend_dir = os.path.join(os.path.dirname(current_dir), 'backend')
-if backend_dir not in sys.path:
-    sys.path.insert(0, backend_dir)
-if os.path.dirname(current_dir) not in sys.path:
-    sys.path.insert(0, os.path.dirname(current_dir))
+project_root = os.path.dirname(current_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 # Import the Flask app from backend
+# Vercel will automatically use this as a WSGI application
 from backend.api import app
-
-# Export for Vercel
-# Vercel will call this as a WSGI application
-def handler(request, context):
-    """Vercel serverless function handler."""
-    return app(request, context)
-
-# For compatibility with Vercel's Python runtime
-# This makes the Flask app available as 'app' at the module level
-__all__ = ['app', 'handler']
