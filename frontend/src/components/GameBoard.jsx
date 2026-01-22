@@ -31,6 +31,10 @@ const GameBoard = ({ gameData, onGameComplete, onSwitchProduct, onPlayAgain, gam
 
     if (game_info.barrier_type === 'up') {
       return currentPrices.some(price => price >= game_info.barrier)
+    } else if (game_info.barrier_type === 'down') {
+      // Down-and-out: barrier hit when ANY stock goes at or below barrier
+      const minPrice = Math.min(...currentPrices)
+      return minPrice <= game_info.barrier
     } else if (game_info.barrier_type === 'double') {
       const maxPrice = Math.max(...currentPrices)
       const minPrice = Math.min(...currentPrices)
