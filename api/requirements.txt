@@ -1,6 +1,7 @@
 # Python dependencies for Vercel serverless functions (Python 3.12)
 # NOTE: PyTorch has been removed! Models are now in numpy-only format.
-# IMPORTANT: numpy 2.x is required because pickle files were saved with numpy 2.x
+# scipy is needed for exact GELU computation (scipy.special.erf)
 flask==3.0.0
 flask-cors==4.0.0
 numpy>=2.0.0
+scipy>=1.11.0

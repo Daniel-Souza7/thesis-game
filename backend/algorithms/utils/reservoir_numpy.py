@@ -9,11 +9,21 @@ The weights are extracted from trained PyTorch models and stored as numpy arrays
 """
 
 import numpy as np
+from scipy.special import erf as scipy_erf
 
 
 def gelu(x):
-    """GELU activation function (Gaussian Error Linear Unit)."""
-    return 0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x**3)))
+    """GELU activation function (Gaussian Error Linear Unit).
+
+    Uses the EXACT formula: GELU(x) = x * Φ(x) = x * 0.5 * (1 + erf(x / sqrt(2)))
+    This matches PyTorch's GELU exactly, unlike the tanh approximation.
+
+    Using the exact formula is critical because the model coefficients have
+    magnitudes in the tens of thousands, so even tiny approximation errors
+    compound into large prediction errors.
+    """
+    # Exact GELU using scipy's error function (matches PyTorch exactly)
+    return x * 0.5 * (1 + scipy_erf(x / np.sqrt(2)))
 
 
 def leaky_relu(x, negative_slope=0.5):
